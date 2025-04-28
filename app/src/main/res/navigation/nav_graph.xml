@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/homeFragment">
+
+    <!-- 首页 Fragment -->
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="com.example.motophosaique.HomeFragment"
+        android:label="Home">
+
+        <!-- 从 HomeFragment 跳到 SelectFragment -->
+        <action
+            android:id="@+id/action_home_to_select"
+            app:destination="@id/selectFragment" />
+    </fragment>
+
+    <!-- 选择参数页 -->
+    <fragment
+        android:id="@+id/selectFragment"
+        android:name="com.example.motophosaique.SelectFragment"
+        android:label="SelectParams">
+
+        <!-- 从 SelectFragment 跳到 ResultFragment -->
+        <action
+            android:id="@+id/action_select_to_result"
+            app:destination="@id/resultFragment" />
+    </fragment>
+
+    <!-- 结果展示页 -->
+    <fragment
+        android:id="@+id/resultFragment"
+        android:name="com.example.motophosaique.ResultFragment"
+        android:label="Result" />
+</navigation>
