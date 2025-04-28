@@ -5,7 +5,9 @@
     android:id="@+id/resultRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#333333">
+    android:background="#333333"
+    android:paddingTop="50dp"
+    android:paddingHorizontal="16dp">
 
     <!-- 返回按钮 -->
     <ImageView
@@ -15,6 +17,7 @@
         android:clickable="true"
         android:contentDescription="Back"
         android:src="@drawable/back"
+        android:layout_marginTop="10dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
