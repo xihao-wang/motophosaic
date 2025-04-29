@@ -22,14 +22,11 @@ public class Utils {
 
     /** 复制 assets 下的单个文件到外部 File */
     public static boolean copyAsset(Context ctx, String assetName, File outFile) {
-        AssetManager am = ctx.getAssets();
-        try (InputStream is = am.open(assetName);
+        try (InputStream is = ctx.getAssets().open(assetName);
              FileOutputStream os = new FileOutputStream(outFile)) {
             byte[] buf = new byte[4096];
-            int r;
-            while ((r = is.read(buf)) > 0) {
-                os.write(buf, 0, r);
-            }
+            int len;
+            while ((len = is.read(buf)) > 0) os.write(buf, 0, len);
             return true;
         } catch (IOException e) {
             Log.e(TAG, "copyAsset failed: " + assetName, e);
@@ -37,23 +34,28 @@ public class Utils {
         }
     }
 
-    /** 递归复制 assets 下的一个目录到外部 */
+    /** 递归拷贝 assets 目录 */
     public static void copyAssetDir(Context ctx, String assetDir, File outDir) throws IOException {
         AssetManager am = ctx.getAssets();
-        String[] list = am.list(assetDir);
-        if (list == null || list.length == 0) {
-            // 可能是文件，直接拷贝
-            copyAsset(ctx, assetDir, outDir);
-            return;
-        }
-        // 是目录
-        if (!outDir.exists() && !outDir.mkdirs()) {
-            throw new IOException("mkdir failed: " + outDir);
-        }
-        for (String name : list) {
-            String subAsset = assetDir + "/" + name;
-            File subOut = new File(outDir, name);
-            copyAssetDir(ctx, subAsset, subOut);
+        String[] children = am.list(assetDir);
+        if (children == null || children.length == 0) {
+            // 这是个文件
+            File parent = outDir.getParentFile();
+            if (!parent.exists()) parent.mkdirs();
+            try (InputStream is = am.open(assetDir);
+                 FileOutputStream os = new FileOutputStream(outDir)) {
+                byte[] buf = new byte[4096];
+                int len;
+                while ((len = is.read(buf)) > 0) os.write(buf, 0, len);
+            }
+        } else {
+            // 这是个目录
+            if (!outDir.exists()) outDir.mkdirs();
+            for (String child : children) {
+                String childAssetPath = assetDir + "/" + child;
+                File  childOutFile    = new File(outDir, child);
+                copyAssetDir(ctx, childAssetPath, childOutFile);
+            }
         }
     }
 

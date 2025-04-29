@@ -55,7 +55,7 @@
         android:layout_height="0dp"
         android:text="Turn Pixels Into MAGIC"
         android:textColor="@android:color/white"
-        android:textSize="32sp"
+        android:textSize="50sp"
         android:fontFamily="@font/amaticscbold"
         android:gravity="center"
         app:layout_constraintTop_toBottomOf="@id/backgroundImage"
