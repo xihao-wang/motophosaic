@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.RadioGroup;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -14,6 +13,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
+import androidx.viewpager2.widget.ViewPager2;
+
+import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.tabs.TabLayoutMediator;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,12 +26,15 @@ public class SelectFragment extends Fragment {
 
     private static final String TAG = "SelectFragment";
 
+    // 外层管理的参数
+    private int blockSize = 16;  // Block size for the mosaic effect
+    private String colorMode = "grey"; // "grey" / "color" / "object"
+    private String algo = "average";  // Algorithm for mosaic generation
+    private boolean withRep = false; // Temporary variable for distribution, if needed
+
     public SelectFragment() {
         super(R.layout.fragment_select);
     }
-
-    private int blockSize = 16;
-    private String mode = "grey";
 
     @Override
     public void onViewCreated(@NonNull View v, @Nullable Bundle savedInstanceState) {
@@ -48,70 +54,106 @@ public class SelectFragment extends Fragment {
                 Uri photoUri = Uri.parse(photoUriString);
                 Bitmap bitmap = loadBitmapFromUri(photoUri);
                 if (bitmap != null) {
-                    // 清空旧图片
-                    ivPreview.setImageBitmap(null);
+                    ivPreview.setImageBitmap(bitmap);
                     // 保存为 PGM 并显示
                     Utils.saveAsPGM(bitmap, inPgm);
-                    ivPreview.setImageBitmap(bitmap);
                     Log.d(TAG, "New photo saved as PGM and displayed");
                 } else {
                     Log.e(TAG, "Failed to load bitmap from URI: " + photoUriString);
-                    // 回退：加载现有 PGM
-                    loadExistingPgm(ivPreview, inPgm);
+                    loadExistingPgm(ivPreview, inPgm); // 回退加载现有 PGM
                 }
             } catch (IOException e) {
                 Log.e(TAG, "Error processing photoUri: " + e.getMessage());
-                // 回退：加载现有 PGM
-                loadExistingPgm(ivPreview, inPgm);
+                loadExistingPgm(ivPreview, inPgm); // 回退加载现有 PGM
             }
         } else {
             Log.w(TAG, "No photoUri in arguments, loading existing PGM");
-            // 没有新照片，加载现有 PGM
-            loadExistingPgm(ivPreview, inPgm);
+            loadExistingPgm(ivPreview, inPgm); // 没有新照片，加载现有 PGM
         }
 
         // —— 2) 返回 Home ——
         v.findViewById(R.id.btnBack)
-                .setOnClickListener(x ->
-                        Navigation.findNavController(x).popBackStack()
-                );
+                .setOnClickListener(x -> Navigation.findNavController(x).popBackStack());
 
-        // —— 3) SeekBar 控制 blockSize ——
+        // —— 预览原图 ——
+        Bitmap preview = Utils.decodePGM(inPgm);
+        if (preview != null) ivPreview.setImageBitmap(preview);
+
+        // —— BlockSize SeekBar ——
         TextView tvBlock = v.findViewById(R.id.tvBlockSize);
         SeekBar sb = v.findViewById(R.id.seekBar);
         sb.setProgress(blockSize);
         sb.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                blockSize = Math.max(1, progress);
+                blockSize = Math.max(1, progress); // Ensure block size is at least 1
                 tvBlock.setText("Size Of Block: " + blockSize);
             }
 
             @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
+            public void onStartTrackingTouch(SeekBar seekBar) {}
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {}
+        });
+
+        // —— TabLayout + ViewPager2 管理 “灰度/彩色/目标” 三个子 Fragment ——
+        TabLayout tabMode = v.findViewById(R.id.tabMode);
+        ViewPager2 vpAlgo = v.findViewById(R.id.vpAlgo);
+        vpAlgo.setAdapter(new AlgoPagerAdapter(this));
+
+        // 设置 Tab 标题
+        new TabLayoutMediator(tabMode, vpAlgo, (tab, pos) -> {
+            switch (pos) {
+                case 0:
+                    tab.setText("Grey");
+                    break;
+                case 1:
+                    tab.setText("Color");
+                    break;
+                case 2:
+                    tab.setText("Object");
+                    break;
+            }
+        }).attach();
+
+        // 根据选中的 tab 切换 colorMode 值
+        tabMode.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                switch (tab.getPosition()) {
+                    case 0:
+                        colorMode = "grey";
+                        break;
+                    case 1:
+                        colorMode = "color";
+                        break;
+                    case 2:
+                        colorMode = "object";
+                        break;
+                }
             }
 
             @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-            }
+            public void onTabUnselected(TabLayout.Tab tab) {}
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {}
         });
 
-        // —— 4) 模式单选 ——
-        RadioGroup rg = v.findViewById(R.id.rgMode);
-        rg.setOnCheckedChangeListener((group, checkedId) -> {
-            if (checkedId == R.id.rbGrey) mode = "grey";
-            if (checkedId == R.id.rbColor) mode = "color";
-            if (checkedId == R.id.rbObject) mode = "object";
-        });
+        // 初始化为第一个“Grey”
+        colorMode = "grey";
 
-        // —— 5) Generate → Result 跳转 ——
+        // —— 点击 Generate 跳转并传参 ——
         v.findViewById(R.id.btnGenerate)
                 .setOnClickListener(x -> {
-                    Bundle bundle = new Bundle();
-                    bundle.putInt("blockSize", blockSize);
-                    bundle.putString("mode", mode);
+                    Bundle generateArgs = new Bundle();
+                    generateArgs.putInt("blockSize", blockSize);
+                    generateArgs.putString("colorMode", colorMode);
+                    generateArgs.putString("algo", algo);
+                    generateArgs.putBoolean("withRep", withRep);
                     Navigation.findNavController(x)
-                            .navigate(R.id.action_select_to_result, bundle);
+                            .navigate(R.id.action_select_to_result, generateArgs);
                 });
     }
 
@@ -153,5 +195,11 @@ public class SelectFragment extends Fragment {
                 }
             }
         }
+    }
+
+    // 新增的 setAlgo 方法
+    public void setAlgo(String algo) {
+        this.algo = algo;
+        Log.d(TAG, "Algo set to: " + algo);
     }
 }

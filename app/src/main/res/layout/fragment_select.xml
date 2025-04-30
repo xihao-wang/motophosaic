@@ -8,41 +8,38 @@
     android:paddingHorizontal="16dp"
     android:background="#333333">
 
-    <!-- 返回箭头 -->
-
-    <!-- Generate 按钮 -->
+    <!-- 返回按钮 -->
     <ImageView
         android:id="@+id/btnBack"
         android:layout_width="32dp"
         android:layout_height="32dp"
-        android:clickable="true"
-        android:contentDescription="Back"
         android:src="@drawable/back"
-        android:layout_marginTop="10dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:contentDescription="Back"
+        android:clickable="true"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"/>
 
-    <!-- 原图预览区 —— 正方形 -->
-
+    <!-- Generate 按钮 -->
     <Button
         android:id="@+id/btnGenerate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Generate"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
+    <!-- 原图预览 —— 正方形 -->
     <ImageView
         android:id="@+id/ivPreview"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:scaleType="centerCrop"
         android:background="#444444"
+        android:scaleType="centerCrop"
+        android:layout_marginTop="16dp"
         app:layout_constraintTop_toBottomOf="@id/btnBack"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintDimensionRatio="1:1"
-        android:layout_marginTop="16dp"/>
+        app:layout_constraintDimensionRatio="1:1"/>
 
     <!-- Block Size 文本 -->
     <TextView
@@ -52,9 +49,9 @@
         android:text="Size Of Block: 16"
         android:textColor="@android:color/white"
         android:textSize="18sp"
+        android:layout_marginTop="16dp"
         app:layout_constraintTop_toBottomOf="@id/ivPreview"
-        app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginTop="16dp"/>
+        app:layout_constraintStart_toStartOf="parent"/>
 
     <!-- SeekBar -->
     <SeekBar
@@ -63,46 +60,34 @@
         android:layout_height="wrap_content"
         android:max="128"
         android:progress="16"
+        android:layout_marginTop="8dp"
         app:layout_constraintTop_toBottomOf="@id/tvBlockSize"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="8dp"/>
+        app:layout_constraintEnd_toEndOf="parent"/>
 
-    <!-- 模式选项 -->
-    <RadioGroup
-        android:id="@+id/rgMode"
+    <!-- —— 用 TabLayout 替代原来的 RadioGroup —— -->
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tabMode"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
+        android:layout_marginTop="40dp"
         app:layout_constraintTop_toBottomOf="@id/seekBar"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:background="#333333"
+        app:tabTextColor="@color/white"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- 算法内容由 ViewPager2 承载 -->
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/vpAlgo"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:layout_marginTop="16dp"
-        android:gravity="center">
-
-        <RadioButton
-            android:id="@+id/rbGrey"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="grey"
-            android:textColor="@android:color/white"
-            android:checked="true"/>
-
-        <RadioButton
-            android:id="@+id/rbColor"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="color"
-            android:textColor="@android:color/white"
-            android:layout_marginStart="16dp"/>
-
-        <RadioButton
-            android:id="@+id/rbObject"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="object"
-            android:textColor="@android:color/white"
-            android:layout_marginStart="16dp"/>
-    </RadioGroup>
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tabMode"
+        app:layout_constraintVertical_bias="0.0" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -2,11 +2,16 @@ package com.example.motophosaique;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -26,6 +31,7 @@ import java.util.Date;
 import java.util.Locale;
 
 public class HomeFragment extends Fragment {
+
     private Uri photoUri; // To store the URI of the captured or selected photo
     private ActivityResultLauncher<String> requestPermissionLauncher;
     private ActivityResultLauncher<Uri> takePictureLauncher;
@@ -87,15 +93,45 @@ public class HomeFragment extends Fragment {
     }
 
     @Override
-    public void onViewCreated(@NonNull View v, @Nullable Bundle s) {
-        // Click the importContainer to show dialog
-        v.findViewById(R.id.importContainer).setOnClickListener(view -> showPhotoOptionsDialog());
+    public void onViewCreated(@NonNull View v, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(v, savedInstanceState);
+
+        // —— 1) 显示图片预览 ——（添加了弹性逻辑来处理图片的选择）
+        TextView tv = v.findViewById(R.id.mosaicPlaceholder);
+        String text = "Turn Pixels Into MAGIC";
+        SpannableString ss = new SpannableString(text);
+
+        int[] colors = {
+                0xFFE84133,
+                0xFF4A8E20,
+                0xFF3D868D,
+                0xFFFFCA00,
+                0xFF60BAC2
+        };
+
+        int start = text.indexOf("MAGIC");
+        for (int i = 0; i < colors.length; i++) {
+            ss.setSpan(
+                    new ForegroundColorSpan(colors[i]),
+                    start + i,
+                    start + i + 1,
+                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            );
+        }
+        tv.setText(ss);
+
+        // —— 2) 点击 + 号区域，跳到 SelectFragment ——
+        v.findViewById(R.id.importContainer).setOnClickListener(view -> {
+            Log.d("HomeFragment", "importContainer clicked, showing options");
+            showPhotoOptionsDialog();
+        });
     }
 
     private void showPhotoOptionsDialog() {
         new AlertDialog.Builder(requireContext())
                 .setTitle("Select Photo")
                 .setItems(new String[]{"Choose a Photo", "Take a Photo"}, (dialog, which) -> {
+                    Log.d("HomeFragment", "Option selected: " + which);
                     if (which == 0) {
                         // Choose a Photo
                         checkStoragePermission();
