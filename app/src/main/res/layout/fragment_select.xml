@@ -8,7 +8,7 @@
     android:paddingHorizontal="16dp"
     android:background="#333333">
 
-    <!-- 返回按钮 -->
+
     <ImageView
         android:id="@+id/btnBack"
         android:layout_width="32dp"
@@ -19,7 +19,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"/>
 
-    <!-- Generate 按钮 -->
+
     <Button
         android:id="@+id/btnGenerate"
         android:layout_width="wrap_content"
@@ -28,7 +28,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <!-- 原图预览 —— 正方形 -->
+
     <ImageView
         android:id="@+id/ivPreview"
         android:layout_width="0dp"
@@ -41,7 +41,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintDimensionRatio="1:1"/>
 
-    <!-- Block Size 文本 -->
+
     <TextView
         android:id="@+id/tvBlockSize"
         android:layout_width="wrap_content"
@@ -53,7 +53,7 @@
         app:layout_constraintTop_toBottomOf="@id/ivPreview"
         app:layout_constraintStart_toStartOf="parent"/>
 
-    <!-- SeekBar -->
+
     <SeekBar
         android:id="@+id/seekBar"
         android:layout_width="0dp"
@@ -65,7 +65,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <!-- —— 用 TabLayout 替代原来的 RadioGroup —— -->
+
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tabMode"
         android:layout_width="0dp"
@@ -77,7 +77,7 @@
         app:tabTextColor="@color/white"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <!-- 算法内容由 ViewPager2 承载 -->
+
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/vpAlgo"
         android:layout_width="0dp"

@@ -14,6 +14,5 @@ public class ObjectAlgoFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View v, @Nullable Bundle s) {
         super.onViewCreated(v, s);
-        // 暂时没有目标检测算法，留空或拷贝灰度逻辑
     }
 }

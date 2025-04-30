@@ -21,13 +21,11 @@ public class ResultFragment extends Fragment {
 
     @Override
     public void onViewCreated(@NonNull View v, @Nullable Bundle savedInstanceState) {
-        // 返回上一页
         v.findViewById(R.id.btnBack)
                 .setOnClickListener(x -> Navigation.findNavController(x).popBackStack());
 
-        // 取参数
         int blockSize = getArguments().getInt    ("blockSize", 16);
-        String algo   = getArguments().getString ("algo",      "average");      // ← 注意这里 key 是 "algo"
+        String algo   = getArguments().getString ("algo",      "average");
         boolean withRep = getArguments().getBoolean("withRep", true);
 
         ImageView iv = v.findViewById(R.id.ivResult);
@@ -45,7 +43,6 @@ public class ResultFragment extends Fragment {
                 File in    = new File(cache, "input.pgm");
                 File out   = new File(cache, "output.pgm");
 
-                // 调 JNI，传入算法名称 algo
                 int res = ((MainActivity)requireActivity())
                         .generateMosaic(
                                 in.getAbsolutePath(),
@@ -58,7 +55,6 @@ public class ResultFragment extends Fragment {
                 if (res != 0) {
                     return null;
                 }
-                // 解码 PGM -> Bitmap
                 return Utils.decodePGM(out);
             }
 
@@ -67,7 +63,7 @@ public class ResultFragment extends Fragment {
                     iv.setImageBitmap(bmp);
                     tv.setText("Waiting time: " + (elapsed/1000f) + "s");
                 } else {
-                    tv.setText("生成失败（algo=" + algo + "），请查看日志");
+                    tv.setText("fail（algo=" + algo + "）read the log");
                 }
             }
         }.execute();

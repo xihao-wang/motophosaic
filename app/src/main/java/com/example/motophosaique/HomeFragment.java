@@ -32,7 +32,7 @@ import java.util.Locale;
 
 public class HomeFragment extends Fragment {
 
-    private Uri photoUri; // To store the URI of the captured or selected photo
+    private Uri photoUri;
     private ActivityResultLauncher<String> requestPermissionLauncher;
     private ActivityResultLauncher<Uri> takePictureLauncher;
     private ActivityResultLauncher<String> pickImageLauncher;
@@ -45,17 +45,14 @@ public class HomeFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Initialize permission launcher
+
         requestPermissionLauncher = registerForActivityResult(
                 new ActivityResultContracts.RequestPermission(),
                 isGranted -> {
                     if (isGranted) {
-                        // Permission granted, proceed with action
                         if (photoUri == null) {
-                            // Camera permission was requested
                             dispatchTakePictureIntent();
                         } else {
-                            // Storage permission was requested
                             dispatchPickImageIntent();
                         }
                     } else {
@@ -64,12 +61,10 @@ public class HomeFragment extends Fragment {
                 }
         );
 
-        // Initialize camera launcher
         takePictureLauncher = registerForActivityResult(
                 new ActivityResultContracts.TakePicture(),
                 result -> {
                     if (result) {
-                        // Photo taken successfully, navigate to SelectFragment
                         navigateToSelectFragment();
                     } else {
                         Toast.makeText(requireContext(), "Failed to capture photo", Toast.LENGTH_SHORT).show();
@@ -77,13 +72,11 @@ public class HomeFragment extends Fragment {
                 }
         );
 
-        // Initialize gallery launcher
         pickImageLauncher = registerForActivityResult(
                 new ActivityResultContracts.GetContent(),
                 uri -> {
                     if (uri != null) {
                         photoUri = uri;
-                        // Photo selected, navigate to SelectFragment
                         navigateToSelectFragment();
                     } else {
                         Toast.makeText(requireContext(), "Failed to select photo", Toast.LENGTH_SHORT).show();
@@ -96,7 +89,6 @@ public class HomeFragment extends Fragment {
     public void onViewCreated(@NonNull View v, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(v, savedInstanceState);
 
-        // —— 1) 显示图片预览 ——（添加了弹性逻辑来处理图片的选择）
         TextView tv = v.findViewById(R.id.mosaicPlaceholder);
         String text = "Turn Pixels Into MAGIC";
         SpannableString ss = new SpannableString(text);
@@ -120,7 +112,6 @@ public class HomeFragment extends Fragment {
         }
         tv.setText(ss);
 
-        // —— 2) 点击 + 号区域，跳到 SelectFragment ——
         v.findViewById(R.id.importContainer).setOnClickListener(view -> {
             Log.d("HomeFragment", "importContainer clicked, showing options");
             showPhotoOptionsDialog();
@@ -133,10 +124,8 @@ public class HomeFragment extends Fragment {
                 .setItems(new String[]{"Choose a Photo", "Take a Photo"}, (dialog, which) -> {
                     Log.d("HomeFragment", "Option selected: " + which);
                     if (which == 0) {
-                        // Choose a Photo
                         checkStoragePermission();
                     } else {
-                        // Take a Photo
                         checkCameraPermission();
                     }
                 })
@@ -164,7 +153,6 @@ public class HomeFragment extends Fragment {
 
     private void dispatchTakePictureIntent() {
         try {
-            // Create a file for the photo
             File photoFile = createImageFile();
             photoUri = FileProvider.getUriForFile(
                     requireContext(),

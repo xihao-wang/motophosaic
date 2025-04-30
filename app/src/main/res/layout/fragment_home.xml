@@ -6,7 +6,6 @@
     android:layout_height="match_parent"
     android:background="#333333">
 
-    <!-- 背景图（上半屏） -->
     <ImageView
         android:id="@+id/backgroundImage"
         android:layout_width="0dp"
@@ -18,7 +17,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <!-- 导入（＋）按钮 -->
+
     <LinearLayout
         android:id="@+id/importContainer"
         android:layout_width="0dp"
@@ -48,7 +47,7 @@
             android:fontFamily="sans-serif-medium" />
     </LinearLayout>
 
-    <!-- 标题 -->
+
     <TextView
         android:id="@+id/mosaicPlaceholder"
         android:layout_width="0dp"
@@ -64,7 +63,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHeight_percent="0.3" />
 
-    <!-- 小问号 -->
+
     <ImageView
         android:id="@+id/helpButton"
         android:layout_width="48dp"

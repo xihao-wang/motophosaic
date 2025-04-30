@@ -26,11 +26,10 @@ public class SelectFragment extends Fragment {
 
     private static final String TAG = "SelectFragment";
 
-    // 外层管理的参数
-    private int blockSize = 16;  // Block size for the mosaic effect
-    private String colorMode = "grey"; // "grey" / "color" / "object"
-    private String algo = "average";  // Algorithm for mosaic generation
-    private boolean withRep = false; // Temporary variable for distribution, if needed
+    private int blockSize = 16;
+    private String colorMode = "grey";
+    private String algo = "average";
+    private boolean withRep = false;
 
     public SelectFragment() {
         super(R.layout.fragment_select);
@@ -40,12 +39,12 @@ public class SelectFragment extends Fragment {
     public void onViewCreated(@NonNull View v, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(v, savedInstanceState);
 
-        // —— 1) 显示图片预览 ——
+
         ImageView ivPreview = v.findViewById(R.id.ivPreview);
         File cache = requireActivity().getCacheDir();
         File inPgm = new File(cache, "input.pgm");
 
-        // 检查是否有新的 photoUri
+
         Bundle args = getArguments();
         if (args != null && args.containsKey("photoUri")) {
             String photoUriString = args.getString("photoUri");
@@ -60,33 +59,30 @@ public class SelectFragment extends Fragment {
                     Log.d(TAG, "New photo saved as PGM and displayed");
                 } else {
                     Log.e(TAG, "Failed to load bitmap from URI: " + photoUriString);
-                    loadExistingPgm(ivPreview, inPgm); // 回退加载现有 PGM
+                    loadExistingPgm(ivPreview, inPgm);
                 }
             } catch (IOException e) {
                 Log.e(TAG, "Error processing photoUri: " + e.getMessage());
-                loadExistingPgm(ivPreview, inPgm); // 回退加载现有 PGM
+                loadExistingPgm(ivPreview, inPgm);
             }
         } else {
             Log.w(TAG, "No photoUri in arguments, loading existing PGM");
-            loadExistingPgm(ivPreview, inPgm); // 没有新照片，加载现有 PGM
+            loadExistingPgm(ivPreview, inPgm);
         }
 
-        // —— 2) 返回 Home ——
         v.findViewById(R.id.btnBack)
                 .setOnClickListener(x -> Navigation.findNavController(x).popBackStack());
 
-        // —— 预览原图 ——
         Bitmap preview = Utils.decodePGM(inPgm);
         if (preview != null) ivPreview.setImageBitmap(preview);
 
-        // —— BlockSize SeekBar ——
         TextView tvBlock = v.findViewById(R.id.tvBlockSize);
         SeekBar sb = v.findViewById(R.id.seekBar);
         sb.setProgress(blockSize);
         sb.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                blockSize = Math.max(1, progress); // Ensure block size is at least 1
+                blockSize = Math.max(1, progress);
                 tvBlock.setText("Size Of Block: " + blockSize);
             }
 
@@ -97,12 +93,11 @@ public class SelectFragment extends Fragment {
             public void onStopTrackingTouch(SeekBar seekBar) {}
         });
 
-        // —— TabLayout + ViewPager2 管理 “灰度/彩色/目标” 三个子 Fragment ——
+
         TabLayout tabMode = v.findViewById(R.id.tabMode);
         ViewPager2 vpAlgo = v.findViewById(R.id.vpAlgo);
         vpAlgo.setAdapter(new AlgoPagerAdapter(this));
 
-        // 设置 Tab 标题
         new TabLayoutMediator(tabMode, vpAlgo, (tab, pos) -> {
             switch (pos) {
                 case 0:
@@ -117,7 +112,7 @@ public class SelectFragment extends Fragment {
             }
         }).attach();
 
-        // 根据选中的 tab 切换 colorMode 值
+
         tabMode.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
@@ -141,10 +136,10 @@ public class SelectFragment extends Fragment {
             public void onTabReselected(TabLayout.Tab tab) {}
         });
 
-        // 初始化为第一个“Grey”
+
         colorMode = "grey";
 
-        // —— 点击 Generate 跳转并传参 ——
+
         v.findViewById(R.id.btnGenerate)
                 .setOnClickListener(x -> {
                     Bundle generateArgs = new Bundle();
@@ -157,7 +152,7 @@ public class SelectFragment extends Fragment {
                 });
     }
 
-    // 加载现有 PGM 文件（回退逻辑）
+
     private void loadExistingPgm(ImageView ivPreview, File inPgm) {
         if (inPgm.exists()) {
             Bitmap bmp = Utils.decodePGM(inPgm);
@@ -172,7 +167,7 @@ public class SelectFragment extends Fragment {
         }
     }
 
-    // 从 URI 加载 Bitmap
+
     private Bitmap loadBitmapFromUri(Uri uri) throws IOException {
         InputStream inputStream = null;
         try {
@@ -197,7 +192,6 @@ public class SelectFragment extends Fragment {
         }
     }
 
-    // 新增的 setAlgo 方法
     public void setAlgo(String algo) {
         this.algo = algo;
         Log.d(TAG, "Algo set to: " + algo);

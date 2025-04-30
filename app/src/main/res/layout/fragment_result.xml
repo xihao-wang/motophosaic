@@ -9,7 +9,6 @@
     android:paddingTop="50dp"
     android:paddingHorizontal="16dp">
 
-    <!-- 返回按钮 -->
     <ImageView
         android:id="@+id/btnBack"
         android:layout_width="32dp"
@@ -21,7 +20,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- 正方形的 PhotoMosaic ImageView -->
+
     <ImageView
         android:id="@+id/ivResult"
         android:layout_width="0dp"
@@ -35,7 +34,7 @@
         android:layout_marginTop="8dp"
         android:layout_marginBottom="8dp"/>
 
-    <!-- 显示生成耗时 -->
+
     <TextView
         android:id="@+id/tvTime"
         android:layout_width="wrap_content"

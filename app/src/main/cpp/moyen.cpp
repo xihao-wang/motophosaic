@@ -21,7 +21,7 @@ int generatePhotoMosaic(const char* inputPath,
         allocation_tableau(ImgOut, OCTET, nTaille);
         lire_image_pgm(inputPath, ImgIn, nTaille);
 
-        // 计算所有 tile 的平均灰度
+
         std::vector<float> moy(NB_BASE_DE_DONNEE+1);
         for (int id=1; id<=NB_BASE_DE_DONNEE; ++id) {
             OCTET* tile = nullptr;
@@ -33,7 +33,7 @@ int generatePhotoMosaic(const char* inputPath,
             free(tile);
         }
 
-        // 瓦片替换
+
         for(int y=0; y<=nH-tailleBloc; y+=tailleBloc){
             for(int x=0; x<=nW-tailleBloc; x+=tailleBloc){
                 float sumB=0;

@@ -22,7 +22,6 @@ int histogramMosaic(const char* inputPath,
         allocation_tableau(ImgOut, OCTET, nTaille);
         lire_image_pgm(inputPath, ImgIn, nTaille);
 
-        // 读出每个 tile 的直方图
         struct Imag { int ID; std::array<int,256> h; };
         std::vector<Imag> L; L.reserve(NB_BASE_DE_DONNEE);
         for(int id=1; id<=NB_BASE_DE_DONNEE; ++id){
@@ -38,7 +37,6 @@ int histogramMosaic(const char* inputPath,
             free(inT); free(outT);
         }
 
-        // 块替换
         for(int y=0; y<=nH-tailleBloc; y+=tailleBloc){
             for(int x=0; x<=nW-tailleBloc; x+=tailleBloc){
                 std::array<int,256> hbloc{0};
