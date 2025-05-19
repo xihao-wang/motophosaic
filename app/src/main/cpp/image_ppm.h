@@ -18,7 +18,6 @@ using namespace std;
 #define LOG_TAG "mosaic"
 #define LOGE(fmt, ...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, fmt, ##__VA_ARGS__)
 
-// 如果 calloc 失败，则抛出异常
 #define allocation_tableau(nom, type, nombre)                                  \
   do {                                                                         \
     (nom) = (type*)calloc((nombre), sizeof(type));                             \
@@ -30,7 +29,7 @@ using namespace std;
 
 typedef unsigned char OCTET;
 
-/** 跳过以 ‘#’ 开头的注释行 */
+
 static void ignorer_commentaires(FILE* f) {
     int c;
     while ((c = fgetc(f)) != EOF) {
@@ -43,7 +42,7 @@ static void ignorer_commentaires(FILE* f) {
     }
 }
 
-/** 写二进制 PPM (P6) */
+
 static void ecrire_image_ppm(const char* path,
                              const OCTET* img,
                              int nb_lignes, int nb_colonnes) {
@@ -61,7 +60,7 @@ static void ecrire_image_ppm(const char* path,
     fclose(f);
 }
 
-/** 读取 PPM 头部，获取尺寸 */
+
 static void lire_nb_lignes_colonnes_image_ppm(const char* path,
                                               int* nb_lignes,
                                               int* nb_colonnes) {
@@ -88,7 +87,7 @@ static void lire_nb_lignes_colonnes_image_ppm(const char* path,
     fclose(f);
 }
 
-/** 读取 PPM 数据 (P6) */
+
 static void lire_image_ppm(const char* path,
                            OCTET* img,
                            int /*unused*/) {
@@ -133,7 +132,6 @@ static void lire_image_ppm(const char* path,
     fclose(f);
 }
 
-/** 写二进制 PGM (P5) */
 static void ecrire_image_pgm(const char* path,
                              const OCTET* img,
                              int nb_lignes, int nb_colonnes) {
@@ -151,7 +149,7 @@ static void ecrire_image_pgm(const char* path,
     fclose(f);
 }
 
-/** 读取 PGM 头部，获取尺寸 */
+
 static void lire_nb_lignes_colonnes_image_pgm(const char* path,
                                               int* nb_lignes,
                                               int* nb_colonnes) {
@@ -178,7 +176,7 @@ static void lire_nb_lignes_colonnes_image_pgm(const char* path,
     fclose(f);
 }
 
-/** 读取 PGM 数据 (P5) */
+
 static void lire_image_pgm(const char* path,
                            OCTET* img,
                            int /*unused*/) {
@@ -223,12 +221,12 @@ static void lire_image_pgm(const char* path,
     fclose(f);
 }
 
-/** 提取 R、G、B 平面 */
+
 static void planR(OCTET* dst, const OCTET* src, int n) { for(int i=0;i<n;i++) dst[i]=src[3*i]; }
 static void planV(OCTET* dst, const OCTET* src, int n) { for(int i=0;i<n;i++) dst[i]=src[3*i+1]; }
 static void planB(OCTET* dst, const OCTET* src, int n) { for(int i=0;i<n;i++) dst[i]=src[3*i+2]; }
 
-/** 均值缩放（灰度） */
+
 static void resize_imagette(const OCTET* in, int hin, int win,
                             OCTET* out, int hout, int wout) {
     int bh = hin/hout, bw = win/wout;
@@ -242,7 +240,7 @@ static void resize_imagette(const OCTET* in, int hin, int win,
         }
 }
 
-/** 均值缩放（彩色） */
+
 static void resize_imagetteCouleur(const OCTET* in, int hin, int win,
                                    OCTET* out, int hout, int wout) {
     int bh = hin/hout, bw = win/wout;
@@ -258,7 +256,7 @@ static void resize_imagetteCouleur(const OCTET* in, int hin, int win,
         }
 }
 
-/** 从 ./img_tile/<id>.pgm 加载灰度 tile */
+
 static void loadImagette(int id, OCTET*& img, int& h, int& w, int& taille) {
     string p = "./img_tile/" + to_string(id) + ".pgm";
     lire_nb_lignes_colonnes_image_pgm(p.c_str(), &h, &w);
@@ -267,7 +265,7 @@ static void loadImagette(int id, OCTET*& img, int& h, int& w, int& taille) {
     lire_image_pgm(p.c_str(), img, taille);
 }
 
-/** 从 ./img_tile_color/i<id>.ppm 加载彩色 tile */
+
 static void loadImagette_cou(int id, OCTET*& img, int& h, int& w, int& taille) {
     string p = "./img_tile_color/i"+to_string(id)+".ppm";
     lire_nb_lignes_colonnes_image_ppm(p.c_str(), &h, &w);

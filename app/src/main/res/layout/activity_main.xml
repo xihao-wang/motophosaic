@@ -5,7 +5,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- 1) 这里是 NavHostFragment，用来承载各个 fragment-->
     <fragment
         android:id="@+id/nav_host"
         android:name="androidx.navigation.fragment.NavHostFragment"
@@ -18,7 +17,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <!-- 2) 底部导航栏，固定在 Activity 里 -->
+
     <LinearLayout
         android:id="@+id/bottomNav"
         android:layout_width="0dp"
@@ -37,7 +36,8 @@
             android:layout_weight="1"
             android:gravity="center"
             android:text="Home"
-            android:textColor="#FFFFFF"
+            android:textColor="@color/btn_text_color"
+            android:background="?android:selectableItemBackground"
             android:textSize="14sp"
             android:clickable="true"/>
 
@@ -48,7 +48,8 @@
             android:layout_weight="1"
             android:gravity="center"
             android:text="History"
-            android:textColor="#888888"
+            android:textColor="@color/btn_text_color"
+            android:background="?android:selectableItemBackground"
             android:textSize="14sp"
             android:clickable="true"/>
     </LinearLayout>

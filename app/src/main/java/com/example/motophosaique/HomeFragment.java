@@ -2,11 +2,16 @@ package com.example.motophosaique;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -26,7 +31,8 @@ import java.util.Date;
 import java.util.Locale;
 
 public class HomeFragment extends Fragment {
-    private Uri photoUri; // To store the URI of the captured or selected photo
+
+    private Uri photoUri;
     private ActivityResultLauncher<String> requestPermissionLauncher;
     private ActivityResultLauncher<Uri> takePictureLauncher;
     private ActivityResultLauncher<String> pickImageLauncher;
@@ -39,17 +45,13 @@ public class HomeFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Initialize permission launcher
         requestPermissionLauncher = registerForActivityResult(
                 new ActivityResultContracts.RequestPermission(),
                 isGranted -> {
                     if (isGranted) {
-                        // Permission granted, proceed with action
                         if (photoUri == null) {
-                            // Camera permission was requested
                             dispatchTakePictureIntent();
                         } else {
-                            // Storage permission was requested
                             dispatchPickImageIntent();
                         }
                     } else {
@@ -58,12 +60,11 @@ public class HomeFragment extends Fragment {
                 }
         );
 
-        // Initialize camera launcher
         takePictureLauncher = registerForActivityResult(
                 new ActivityResultContracts.TakePicture(),
                 result -> {
                     if (result) {
-                        // Photo taken successfully, navigate to SelectFragment
+                        syncAlgoSelection(requireView());
                         navigateToSelectFragment();
                     } else {
                         Toast.makeText(requireContext(), "Failed to capture photo", Toast.LENGTH_SHORT).show();
@@ -71,13 +72,12 @@ public class HomeFragment extends Fragment {
                 }
         );
 
-        // Initialize gallery launcher
         pickImageLauncher = registerForActivityResult(
                 new ActivityResultContracts.GetContent(),
                 uri -> {
                     if (uri != null) {
                         photoUri = uri;
-                        // Photo selected, navigate to SelectFragment
+                        syncAlgoSelection(requireView());
                         navigateToSelectFragment();
                     } else {
                         Toast.makeText(requireContext(), "Failed to select photo", Toast.LENGTH_SHORT).show();
@@ -87,20 +87,52 @@ public class HomeFragment extends Fragment {
     }
 
     @Override
-    public void onViewCreated(@NonNull View v, @Nullable Bundle s) {
-        // Click the importContainer to show dialog
-        v.findViewById(R.id.importContainer).setOnClickListener(view -> showPhotoOptionsDialog());
+    public void onViewCreated(@NonNull View v, @Nullable Bundle savedInstanceState) {
+        View btnAverage = v.findViewById(R.id.btnAverage);
+        if (btnAverage != null) {
+            btnAverage.setSelected(true);
+            AlgoConfig.selectedAlgo = "average";
+            AlgoConfig.isColor = false;
+        }
+        super.onViewCreated(v, savedInstanceState);
+
+        TextView tv = v.findViewById(R.id.mosaicPlaceholder);
+        String text = "Turn Pixels Into MAGIC";
+        SpannableString ss = new SpannableString(text);
+
+        int[] colors = {
+                0xFFE84133,
+                0xFF4A8E20,
+                0xFF3D868D,
+                0xFFFFCA00,
+                0xFF60BAC2
+        };
+
+        int start = text.indexOf("MAGIC");
+        for (int i = 0; i < colors.length; i++) {
+            ss.setSpan(
+                    new ForegroundColorSpan(colors[i]),
+                    start + i,
+                    start + i + 1,
+                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            );
+        }
+        tv.setText(ss);
+
+        v.findViewById(R.id.importContainer).setOnClickListener(view -> {
+            Log.d("HomeFragment", "importContainer clicked, showing options");
+            showPhotoOptionsDialog();
+        });
     }
 
     private void showPhotoOptionsDialog() {
         new AlertDialog.Builder(requireContext())
                 .setTitle("Select Photo")
                 .setItems(new String[]{"Choose a Photo", "Take a Photo"}, (dialog, which) -> {
+                    Log.d("HomeFragment", "Option selected: " + which);
                     if (which == 0) {
-                        // Choose a Photo
                         checkStoragePermission();
                     } else {
-                        // Take a Photo
                         checkCameraPermission();
                     }
                 })
@@ -128,7 +160,6 @@ public class HomeFragment extends Fragment {
 
     private void dispatchTakePictureIntent() {
         try {
-            // Create a file for the photo
             File photoFile = createImageFile();
             photoUri = FileProvider.getUriForFile(
                     requireContext(),
@@ -158,5 +189,18 @@ public class HomeFragment extends Fragment {
         args.putString("photoUri", photoUri.toString());
         Navigation.findNavController(requireView())
                 .navigate(R.id.action_home_to_select, args);
+    }
+
+    private void syncAlgoSelection(View root) {
+        if (root.findViewById(R.id.btnAverage) != null && root.findViewById(R.id.btnAverage).isSelected()) {
+            AlgoConfig.selectedAlgo = "average";
+            AlgoConfig.isColor = false;
+        } else if (root.findViewById(R.id.btnHisto) != null && root.findViewById(R.id.btnHisto).isSelected()) {
+            AlgoConfig.selectedAlgo = "histo";
+            AlgoConfig.isColor = false;
+        } else if (root.findViewById(R.id.btnDistribution) != null && root.findViewById(R.id.btnDistribution).isSelected()) {
+            AlgoConfig.selectedAlgo = "distribute";
+            AlgoConfig.isColor = false;
+        }
     }
 }
