@@ -16,6 +16,10 @@
             app:destination="@id/selectFragment" />
     </fragment>
 
+    <fragment
+        android:id="@+id/historyFragment"
+        android:name="com.example.motophosaique.HistoryFragment"
+        android:label="History" />
     <!-- 选择参数页 -->
     <fragment
         android:id="@+id/selectFragment"

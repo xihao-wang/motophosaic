@@ -1,7 +1,11 @@
 package com.example.motophosaique;
 
 import android.os.Bundle;
+import android.view.View;
+
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,6 +25,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         File cache = getCacheDir();
         Utils.copyAsset(this, "input.pgm", new File(cache, "input.pgm"));
         try {
@@ -29,5 +34,22 @@ public class MainActivity extends AppCompatActivity {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        View navHome = findViewById(R.id.navHome);
+        View navHistory = findViewById(R.id.navHistory);
+        NavController navController = Navigation.findNavController(this, R.id.nav_host);
+
+        navHome.setOnClickListener(v -> {
+            navHome.setSelected(true);
+            navHistory.setSelected(false);
+            navController.navigate(R.id.homeFragment);
+        });
+
+        navHistory.setOnClickListener(v -> {
+            navHome.setSelected(false);
+            navHistory.setSelected(true);
+            navController.navigate(R.id.historyFragment);
+        });
+
     }
 }

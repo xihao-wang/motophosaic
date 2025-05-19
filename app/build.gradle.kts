@@ -50,6 +50,7 @@ dependencies {
     implementation ("androidx.navigation:navigation-ui:2.5.3")
     implementation ("com.google.android.material:material:1.9.0")
     implementation ("androidx.viewpager2:viewpager2:1.1.0")
+    implementation("com.github.chrisbanes:PhotoView:2.3.0")
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

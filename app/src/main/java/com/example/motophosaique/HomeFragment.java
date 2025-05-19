@@ -45,7 +45,6 @@ public class HomeFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-
         requestPermissionLauncher = registerForActivityResult(
                 new ActivityResultContracts.RequestPermission(),
                 isGranted -> {
@@ -65,6 +64,7 @@ public class HomeFragment extends Fragment {
                 new ActivityResultContracts.TakePicture(),
                 result -> {
                     if (result) {
+                        syncAlgoSelection(requireView());
                         navigateToSelectFragment();
                     } else {
                         Toast.makeText(requireContext(), "Failed to capture photo", Toast.LENGTH_SHORT).show();
@@ -77,6 +77,7 @@ public class HomeFragment extends Fragment {
                 uri -> {
                     if (uri != null) {
                         photoUri = uri;
+                        syncAlgoSelection(requireView());
                         navigateToSelectFragment();
                     } else {
                         Toast.makeText(requireContext(), "Failed to select photo", Toast.LENGTH_SHORT).show();
@@ -87,6 +88,12 @@ public class HomeFragment extends Fragment {
 
     @Override
     public void onViewCreated(@NonNull View v, @Nullable Bundle savedInstanceState) {
+        View btnAverage = v.findViewById(R.id.btnAverage);
+        if (btnAverage != null) {
+            btnAverage.setSelected(true);
+            AlgoConfig.selectedAlgo = "average";
+            AlgoConfig.isColor = false;
+        }
         super.onViewCreated(v, savedInstanceState);
 
         TextView tv = v.findViewById(R.id.mosaicPlaceholder);
@@ -182,5 +189,18 @@ public class HomeFragment extends Fragment {
         args.putString("photoUri", photoUri.toString());
         Navigation.findNavController(requireView())
                 .navigate(R.id.action_home_to_select, args);
+    }
+
+    private void syncAlgoSelection(View root) {
+        if (root.findViewById(R.id.btnAverage) != null && root.findViewById(R.id.btnAverage).isSelected()) {
+            AlgoConfig.selectedAlgo = "average";
+            AlgoConfig.isColor = false;
+        } else if (root.findViewById(R.id.btnHisto) != null && root.findViewById(R.id.btnHisto).isSelected()) {
+            AlgoConfig.selectedAlgo = "histo";
+            AlgoConfig.isColor = false;
+        } else if (root.findViewById(R.id.btnDistribution) != null && root.findViewById(R.id.btnDistribution).isSelected()) {
+            AlgoConfig.selectedAlgo = "distribute";
+            AlgoConfig.isColor = false;
+        }
     }
 }

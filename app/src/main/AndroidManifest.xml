@@ -22,15 +22,19 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Motophosaique"
         tools:targetApi="31">
+
+        <!-- FileProvider for sharing -->
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="com.example.motophosaique.fileprovider"
+            android:authorities="${applicationId}.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+
+        <!-- Main activity -->
         <activity
             android:name=".MainActivity"
             android:exported="true">
@@ -39,5 +43,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- ✅ History detail activity -->
+        <activity android:name=".HistoryDetailActivity" />
+
     </application>
 </manifest>
