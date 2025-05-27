@@ -6,6 +6,16 @@
     android:background="#222"
     android:layout_marginBottom="8dp">
 
+
+    <TextView
+        android:id="@+id/textType"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Type: grey"
+        android:textColor="#FFF"
+        android:textSize="14sp"
+        android:textStyle="bold"/>
+
     <ImageView
         android:id="@+id/imageThumb"
         android:layout_width="match_parent"

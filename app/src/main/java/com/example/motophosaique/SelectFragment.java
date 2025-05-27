@@ -1,6 +1,5 @@
 package com.example.motophosaique;
 
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -11,189 +10,163 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 import androidx.viewpager2.widget.ViewPager2;
 
+import com.getkeepsafe.taptargetview.TapTarget;
+import com.getkeepsafe.taptargetview.TapTargetView;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-
 public class SelectFragment extends Fragment {
-
-    private static final String TAG = "SelectFragment";
-
     private int blockSize = 16;
     private String colorMode = "grey";
-    private String algo = "average";
-    private boolean withRep = false;
+    private boolean blockGuideShown = false;
+    private boolean generateGuideShown = false;
 
     public SelectFragment() {
         super(R.layout.fragment_select);
     }
 
     @Override
+    public void onSaveInstanceState(@NonNull Bundle out) {
+        super.onSaveInstanceState(out);
+        out.putBoolean("blockGuideShown", blockGuideShown);
+        out.putBoolean("generateGuideShown", generateGuideShown);
+        out.putInt("blockSize", blockSize);
+        out.putString("colorMode", colorMode);
+    }
+
+    @Override
     public void onViewCreated(@NonNull View v, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(v, savedInstanceState);
 
-
-        ImageView ivPreview = v.findViewById(R.id.ivPreview);
-        File cache = requireActivity().getCacheDir();
-        File inPgm = new File(cache, "input.pgm");
-
-
-        Bundle args = getArguments();
-        if (args != null && args.containsKey("photoUri")) {
-            String photoUriString = args.getString("photoUri");
-            Log.d(TAG, "Received photoUri: " + photoUriString);
-            try {
-                Uri photoUri = Uri.parse(photoUriString);
-                Bitmap bitmap = loadBitmapFromUri(photoUri);
-                if (bitmap != null) {
-                    ivPreview.setImageBitmap(bitmap);
-                    // 保存为 PGM 并显示
-                    Utils.saveAsPGM(bitmap, inPgm);
-                    Log.d(TAG, "New photo saved as PGM and displayed");
-                } else {
-                    Log.e(TAG, "Failed to load bitmap from URI: " + photoUriString);
-                    loadExistingPgm(ivPreview, inPgm);
-                }
-            } catch (IOException e) {
-                Log.e(TAG, "Error processing photoUri: " + e.getMessage());
-                loadExistingPgm(ivPreview, inPgm);
-            }
-        } else {
-            Log.w(TAG, "No photoUri in arguments, loading existing PGM");
-            loadExistingPgm(ivPreview, inPgm);
+        if (savedInstanceState != null) {
+            blockGuideShown     = savedInstanceState.getBoolean("blockGuideShown", false);
+            generateGuideShown  = savedInstanceState.getBoolean("generateGuideShown", false);
+            blockSize           = savedInstanceState.getInt("blockSize", blockSize);
+            colorMode           = savedInstanceState.getString("colorMode", colorMode);
         }
 
-        v.findViewById(R.id.btnBack)
-                .setOnClickListener(x -> Navigation.findNavController(x).popBackStack());
+        Bundle args = getArguments();
+        String uriStr = args != null ? args.getString("photoUri", "") : "";
 
-        Bitmap preview = Utils.decodePGM(inPgm);
-        if (preview != null) ivPreview.setImageBitmap(preview);
+        ImageView ivPreview = v.findViewById(R.id.ivPreview);
+        if (!uriStr.isEmpty()) ivPreview.setImageURI(Uri.parse(uriStr));
 
         TextView tvBlock = v.findViewById(R.id.tvBlockSize);
         SeekBar sb = v.findViewById(R.id.seekBar);
         sb.setProgress(blockSize);
+        tvBlock.setText("Size Of Block: " + blockSize);
         sb.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+            @Override public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 blockSize = Math.max(1, progress);
                 tvBlock.setText("Size Of Block: " + blockSize);
             }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {}
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {}
+            @Override public void onStartTrackingTouch(SeekBar seekBar) {}
+            @Override public void onStopTrackingTouch(SeekBar seekBar) {}
         });
-
 
         TabLayout tabMode = v.findViewById(R.id.tabMode);
         ViewPager2 vpAlgo = v.findViewById(R.id.vpAlgo);
         vpAlgo.setAdapter(new AlgoPagerAdapter(this));
+        new TabLayoutMediator(tabMode, vpAlgo, (tab, pos) ->
+                tab.setText(pos==0?"Grey":pos==1?"Color":"Object")
+        ).attach();
 
-        new TabLayoutMediator(tabMode, vpAlgo, (tab, pos) -> {
-            switch (pos) {
-                case 0:
-                    tab.setText("Grey");
-                    break;
-                case 1:
-                    tab.setText("Color");
-                    break;
-                case 2:
-                    tab.setText("Object");
-                    break;
+        vpAlgo.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override public void onPageSelected(int pos) {
+                colorMode = pos==0?"grey":pos==1?"color":"object";
             }
-        }).attach();
+        });
+        vpAlgo.setCurrentItem(0, false);
 
+        v.findViewById(R.id.btnBack).setOnClickListener(x ->
+                Navigation.findNavController(x).popBackStack()
+        );
 
-        tabMode.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
-            @Override
-            public void onTabSelected(TabLayout.Tab tab) {
-                switch (tab.getPosition()) {
-                    case 0:
-                        colorMode = "grey";
-                        break;
-                    case 1:
-                        colorMode = "color";
-                        break;
-                    case 2:
-                        colorMode = "object";
-                        break;
-                }
-            }
-
-            @Override
-            public void onTabUnselected(TabLayout.Tab tab) {}
-
-            @Override
-            public void onTabReselected(TabLayout.Tab tab) {}
+        v.findViewById(R.id.btnGenerate).setOnClickListener(x -> {
+            Bundle b = new Bundle();
+            b.putString("photoUri",  uriStr);
+            b.putInt("blockSize",    blockSize);
+            b.putString("colorMode",  colorMode);
+            b.putString("algo",       AlgoConfig.selectedAlgo);
+            b.putBoolean("withRep",   AlgoConfig.withRep);
+            Navigation.findNavController(x)
+                    .navigate(R.id.action_select_to_result, b);
         });
 
-
-        colorMode = "grey";
-
-
-        v.findViewById(R.id.btnGenerate)
-                .setOnClickListener(x -> {
-                    Bundle generateArgs = new Bundle();
-                    generateArgs.putInt("blockSize", blockSize);
-                    generateArgs.putString("colorMode", colorMode);
-                    generateArgs.putString("algo", algo);
-                    generateArgs.putBoolean("withRep", withRep);
-                    Navigation.findNavController(x)
-                            .navigate(R.id.action_select_to_result, generateArgs);
-                });
-    }
-
-
-    private void loadExistingPgm(ImageView ivPreview, File inPgm) {
-        if (inPgm.exists()) {
-            Bitmap bmp = Utils.decodePGM(inPgm);
-            if (bmp != null) {
-                ivPreview.setImageBitmap(bmp);
-                Log.d(TAG, "Loaded existing PGM: " + inPgm.getAbsolutePath());
-            } else {
-                Log.w(TAG, "Failed to decode existing PGM");
-            }
-        } else {
-            Log.w(TAG, "No existing PGM file found at: " + inPgm.getAbsolutePath());
+        boolean showGuide = args != null && args.getBoolean("showBlockSizeGuide", false);
+        if (showGuide && !blockGuideShown) {
+            blockGuideShown = true;
+            TapTargetView.showFor(requireActivity(),
+                    TapTarget.forView(tvBlock,
+                                    "Adjust Block Size",
+                                    "Drag this to set the mosaic block size.")
+                            .outerCircleColor(R.color.white)
+                            .targetCircleColor(R.color.black)
+                            .titleTextColor(android.R.color.black)
+                            .descriptionTextColor(android.R.color.black)
+                            .cancelable(true),
+                    new TapTargetView.Listener() {
+                        @Override
+                        public void onTargetClick(TapTargetView view) {
+                            super.onTargetClick(view);
+                            vpAlgo.setCurrentItem(0, true);
+                            vpAlgo.post(() -> {
+                                Fragment f = getChildFragmentManager()
+                                        .findFragmentByTag("f0");
+                                if (f instanceof GreyAlgoFragment) {
+                                    ((GreyAlgoFragment)f)
+                                            .showAverageGuideManually(() -> {
+                                                showGenerateGuideManually(() -> {
+                                                    Navigation.findNavController(v)
+                                                            .popBackStack(R.id.homeFragment, false);
+                                                });
+                                            });
+                                }
+                            });
+                        }
+                    }
+            );
         }
     }
 
+    public void showGenerateGuideManually(Runnable onFinished) {
+        if (generateGuideShown || getView() == null) return;
+        View btn = getView().findViewById(R.id.btnGenerate);
+        if (btn == null) return;
 
-    private Bitmap loadBitmapFromUri(Uri uri) throws IOException {
-        InputStream inputStream = null;
-        try {
-            inputStream = requireContext().getContentResolver().openInputStream(uri);
-            if (inputStream == null) {
-                Log.e(TAG, "Failed to open InputStream for URI: " + uri);
-                return null;
-            }
-            Bitmap bitmap = android.graphics.BitmapFactory.decodeStream(inputStream);
-            if (bitmap == null) {
-                Log.e(TAG, "Failed to decode bitmap from URI: " + uri);
-            }
-            return bitmap;
-        } finally {
-            if (inputStream != null) {
-                try {
-                    inputStream.close();
-                } catch (IOException e) {
-                    Log.w(TAG, "Error closing InputStream: " + e.getMessage());
+        generateGuideShown = true;
+        TapTargetView.showFor(requireActivity(),
+                TapTarget.forView(btn,
+                                "Generate Mosaic",
+                                "Appuyez ici pour générer votre image mosaïque.")
+                        .outerCircleColor(R.color.white)
+                        .targetCircleColor(R.color.black)
+                        .titleTextColor(android.R.color.black)
+                        .descriptionTextColor(android.R.color.black)
+                        .cancelable(false)
+                        .transparentTarget(true)
+                        .tintTarget(false)
+                        .drawShadow(true),
+                new TapTargetView.Listener() {
+                    @Override
+                    public void onTargetClick(TapTargetView view) {
+                        super.onTargetClick(view);
+                        new AlertDialog.Builder(requireContext())
+                                .setTitle("Parfait!")
+                                .setMessage("Vous savez maintenant comment générer une mosaïque.")
+                                .setCancelable(false)
+                                .setPositiveButton("Let's go", (dialog, which) -> {
+                                    dialog.dismiss();
+                                    onFinished.run();
+                                })
+                                .show();
+                    }
                 }
-            }
-        }
-    }
-
-    public void setAlgo(String algo) {
-        this.algo = algo;
-        Log.d(TAG, "Algo set to: " + algo);
+        );
     }
 }

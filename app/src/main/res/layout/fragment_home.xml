@@ -17,9 +17,9 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-
     <LinearLayout
         android:id="@+id/importContainer"
+        android:visibility="visible"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -47,7 +47,6 @@
             android:fontFamily="sans-serif-medium" />
     </LinearLayout>
 
-
     <TextView
         android:id="@+id/mosaicPlaceholder"
         android:layout_width="0dp"
@@ -64,6 +63,52 @@
         app:layout_constraintHeight_percent="0.3" />
 
 
+    <androidx.cardview.widget.CardView
+        android:id="@+id/helpPopup"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        android:elevation="8dp"
+        app:cardCornerRadius="12dp"
+        app:cardBackgroundColor="@android:color/black"
+        app:layout_constraintWidth_percent="0.9"
+        app:layout_constraintHeight_percent="0.5"
+        app:layout_constraintBottom_toTopOf="@id/helpButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginBottom="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:gravity="center_horizontal">
+
+            <TextView
+                android:id="@+id/helpText"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:textColor="@android:color/white"
+                android:textSize="30sp"
+                android:text="What is a photo-mosaic?\n\n lsdkfjsldf method of average dsfjlskdjf sldkfjlskdfjlsk" />
+
+            <ImageView
+                android:id="@+id/closeHelp"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:src="@drawable/close"
+                android:contentDescription="Close help"
+                android:background="@android:color/transparent"
+                android:padding="6dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:layout_marginTop="12dp" />
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+
     <ImageView
         android:id="@+id/helpButton"
         android:layout_width="48dp"
@@ -76,5 +121,4 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         android:layout_margin="16dp"/>
-
 </androidx.constraintlayout.widget.ConstraintLayout>

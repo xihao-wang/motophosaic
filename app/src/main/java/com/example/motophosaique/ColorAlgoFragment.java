@@ -65,7 +65,7 @@ public class ColorAlgoFragment extends Fragment {
             AlgoConfig.selectedAlgo = "histo";
             AlgoConfig.isColor = true;
         } else if (btnDistColor.isSelected()) {
-            AlgoConfig.selectedAlgo = "distribute";
+            AlgoConfig.selectedAlgo = "distribution";
             AlgoConfig.isColor = true;
         }
     }

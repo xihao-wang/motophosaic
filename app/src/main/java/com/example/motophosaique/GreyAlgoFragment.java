@@ -8,7 +8,12 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.getkeepsafe.taptargetview.TapTarget;
+import com.getkeepsafe.taptargetview.TapTargetView;
+
 public class GreyAlgoFragment extends Fragment {
+    private boolean averageGuideShown = false;
+
     public GreyAlgoFragment() {
         super(R.layout.fragment_algos_grey);
     }
@@ -20,7 +25,6 @@ public class GreyAlgoFragment extends Fragment {
         Button btnAverage = view.findViewById(R.id.btnAverage);
         Button btnHisto = view.findViewById(R.id.btnHisto);
         Button btnDistribution = view.findViewById(R.id.btnDistribution);
-
 
         if (!AlgoConfig.hasUserSelected) {
             setSelected(btnAverage, btnHisto, btnDistribution);
@@ -44,7 +48,7 @@ public class GreyAlgoFragment extends Fragment {
 
         btnDistribution.setOnClickListener(v -> {
             setSelected(btnDistribution, btnAverage, btnHisto);
-            AlgoConfig.selectedAlgo = "distribute";
+            AlgoConfig.selectedAlgo = "distribution";
             AlgoConfig.isColor = false;
             AlgoConfig.hasUserSelected = true;
         });
@@ -73,5 +77,38 @@ public class GreyAlgoFragment extends Fragment {
     private void setSelected(Button selected, Button... others) {
         selected.setSelected(true);
         for (Button b : others) b.setSelected(false);
+    }
+
+    public void showAverageGuideManually(Runnable onFinished) {
+        if (averageGuideShown || getView() == null) return;
+        Button btn = getView().findViewById(R.id.btnAverage);
+        if (btn == null) return;
+
+        TapTargetView.showFor(requireActivity(),
+                TapTarget.forView(btn,
+                                "Sélectionnez l'algorithme moyen",
+                                "Ce bouton applique l'algorithme de moyenne pour créer la mosaïque.")
+                        .outerCircleColor(R.color.white)
+                        .targetCircleColor(R.color.black)
+                        .titleTextColor(android.R.color.black)
+                        .descriptionTextColor(android.R.color.black)
+                        .cancelable(true)
+                        .transparentTarget(true)
+                        .tintTarget(false)
+                        .drawShadow(true),
+                new TapTargetView.Listener() {
+                    @Override
+                    public void onTargetClick(TapTargetView view) {
+                        super.onTargetClick(view);
+                        averageGuideShown = true;
+                        onFinished.run();
+                    }
+
+                    @Override
+                    public void onTargetCancel(TapTargetView view) {
+                        onTargetClick(view);
+                    }
+                }
+        );
     }
 }

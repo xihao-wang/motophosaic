@@ -12,9 +12,13 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class HistoryFragment extends Fragment {
+
+    private HistoryAdapter adapter;
+
     public HistoryFragment() {
         super(R.layout.fragment_history);
     }
@@ -26,31 +30,44 @@ public class HistoryFragment extends Fragment {
         RecyclerView recycler = v.findViewById(R.id.historyRecycler);
         recycler.setLayoutManager(new LinearLayoutManager(requireContext()));
 
-        List<HistoryItem> data = loadHistory();
-        HistoryAdapter adapter = new HistoryAdapter(requireContext(), data);
+        adapter = new HistoryAdapter(requireContext(), new ArrayList<>());
         recycler.setAdapter(adapter);
     }
 
-    private List<HistoryItem> loadHistory() {
-        List<HistoryItem> items = new ArrayList<>();
-        File picDir = requireContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+    @Override
+    public void onResume() {
+        super.onResume();
+        loadHistory();
+    }
 
+    private void loadHistory() {
+        File picDir = requireContext()
+                .getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+
+        List<HistoryItem> items = new ArrayList<>();
         if (picDir != null && picDir.exists()) {
             File[] files = picDir.listFiles((dir, name) -> name.endsWith(".jpg"));
-
-            if (files != null) {
+            if (files != null && files.length > 0) {
+                Arrays.sort(files, (a, b) -> Long.compare(b.lastModified(), a.lastModified()));
                 for (File f : files) {
-                    String name = f.getName().replace(".jpg", "");
-                    String[] parts = name.split("_");
-                    if (parts.length >= 3) {
-                        String algo = parts[1];
-                        float time = Float.parseFloat(parts[2]);
-                        items.add(new HistoryItem(f.getAbsolutePath(), algo, time));
+                    String base = f.getName().replace(".jpg", "");
+                    String[] parts = base.split("_");
+                    if (parts.length >= 4) {
+                        String type = parts[1];
+                        String algo = parts[2];
+                        float time;
+                        try {
+                            time = Float.parseFloat(parts[3]);
+                        } catch (NumberFormatException e) {
+                            continue;
+                        }
+
+                        items.add(new HistoryItem(f.getAbsolutePath(), type, algo, time));
                     }
                 }
             }
         }
 
-        return items;
+        adapter.updateData(items);
     }
 }

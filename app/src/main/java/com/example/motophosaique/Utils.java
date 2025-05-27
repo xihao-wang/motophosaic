@@ -35,7 +35,6 @@ public class Utils {
         AssetManager am = ctx.getAssets();
         String[] children = am.list(assetDir);
         if (children == null || children.length == 0) {
-            // 这是个文件
             File parent = outDir.getParentFile();
             if (!parent.exists()) parent.mkdirs();
             try (InputStream is = am.open(assetDir);

@@ -1,3 +1,4 @@
+
 package com.example.motophosaique;
 
 import android.graphics.BitmapFactory;
@@ -18,12 +19,14 @@ public class HistoryDetailActivity extends AppCompatActivity {
         setContentView(R.layout.activity_history_detail);
 
         ImageView imageView = findViewById(R.id.detailImage);
-        TextView algoView = findViewById(R.id.detailAlgo);
-        TextView timeView = findViewById(R.id.detailTime);
+        TextView typeView   = findViewById(R.id.detailType);
+        TextView algoView   = findViewById(R.id.detailAlgo);
+        TextView timeView   = findViewById(R.id.detailTime);
 
         String path = getIntent().getStringExtra("imagePath");
+        String type = getIntent().getStringExtra("type");
         String algo = getIntent().getStringExtra("algo");
-        float time = getIntent().getFloatExtra("timeSec", 0f);
+        float  time = getIntent().getFloatExtra("timeSec", 0f);
 
         if (path != null) {
             File imgFile = new File(path);
@@ -32,6 +35,7 @@ public class HistoryDetailActivity extends AppCompatActivity {
             }
         }
 
+        typeView.setText("Type: " + type);
         algoView.setText("Algorithm: " + algo);
         timeView.setText("Time: " + time + "s");
     }

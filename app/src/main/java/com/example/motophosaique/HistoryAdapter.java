@@ -25,10 +25,17 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.HistoryV
         this.items = items;
     }
 
+    public void updateData(List<HistoryItem> newItems) {
+        items.clear();
+        items.addAll(newItems);
+        notifyDataSetChanged();
+    }
+
     @NonNull
     @Override
     public HistoryViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(context).inflate(R.layout.item_history, parent, false);
+        View v = LayoutInflater.from(context)
+                .inflate(R.layout.item_history, parent, false);
         return new HistoryViewHolder(v);
     }
 
@@ -36,20 +43,22 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.HistoryV
     public void onBindViewHolder(@NonNull HistoryViewHolder holder, int position) {
         HistoryItem item = items.get(position);
 
-        File imgFile = new File(item.imagePath);
+        File imgFile = new File(item.getImagePath());
         if (imgFile.exists()) {
-            holder.imageThumb.setImageBitmap(BitmapFactory.decodeFile(imgFile.getAbsolutePath()));
+            holder.imageThumb.setImageBitmap(
+                    BitmapFactory.decodeFile(imgFile.getAbsolutePath()));
         }
 
-        holder.textAlgo.setText("Algo: " + item.algo);
-        holder.textTime.setText("Time: " + item.timeSec + "s");
+        holder.textType.setText("Type: " + item.getType());
+        holder.textAlgo.setText("Algo: " + item.getAlgo());
+        holder.textTime.setText("Time: " + item.getTimeSec() + "s");
 
-        // 点击进入详情（可扩展）
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, HistoryDetailActivity.class);
-            intent.putExtra("imagePath", item.imagePath);
-            intent.putExtra("algo", item.algo);
-            intent.putExtra("timeSec", item.timeSec);
+            intent.putExtra("imagePath", item.getImagePath());
+            intent.putExtra("type",      item.getType());
+            intent.putExtra("algo",      item.getAlgo());
+            intent.putExtra("timeSec",   item.getTimeSec());
             context.startActivity(intent);
         });
     }
@@ -59,15 +68,16 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.HistoryV
         return items.size();
     }
 
-    public static class HistoryViewHolder extends RecyclerView.ViewHolder {
+    static class HistoryViewHolder extends RecyclerView.ViewHolder {
         ImageView imageThumb;
-        TextView textAlgo, textTime;
+        TextView textType, textAlgo, textTime;
 
         public HistoryViewHolder(@NonNull View itemView) {
             super(itemView);
             imageThumb = itemView.findViewById(R.id.imageThumb);
-            textAlgo = itemView.findViewById(R.id.textAlgo);
-            textTime = itemView.findViewById(R.id.textTime);
+            textType   = itemView.findViewById(R.id.textType);
+            textAlgo   = itemView.findViewById(R.id.textAlgo);
+            textTime   = itemView.findViewById(R.id.textTime);
         }
     }
 }

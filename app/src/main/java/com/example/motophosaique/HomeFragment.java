@@ -1,19 +1,17 @@
 package com.example.motophosaique;
 
 import android.Manifest;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
-import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -22,8 +20,10 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
-
+import com.getkeepsafe.taptargetview.TapTarget;
+import com.getkeepsafe.taptargetview.TapTargetView;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -33,9 +33,11 @@ import java.util.Locale;
 public class HomeFragment extends Fragment {
 
     private Uri photoUri;
-    private ActivityResultLauncher<String> requestPermissionLauncher;
+    private ActivityResultLauncher<String> cameraPermissionLauncher;
+    private ActivityResultLauncher<String> storagePermissionLauncher;
     private ActivityResultLauncher<Uri> takePictureLauncher;
     private ActivityResultLauncher<String> pickImageLauncher;
+    private AlgoViewModel vm;
 
     public HomeFragment() {
         super(R.layout.fragment_home);
@@ -45,26 +47,34 @@ public class HomeFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        requestPermissionLauncher = registerForActivityResult(
+        vm = new ViewModelProvider(requireActivity()).get(AlgoViewModel.class);
+
+        cameraPermissionLauncher = registerForActivityResult(
                 new ActivityResultContracts.RequestPermission(),
                 isGranted -> {
                     if (isGranted) {
-                        if (photoUri == null) {
-                            dispatchTakePictureIntent();
-                        } else {
-                            dispatchPickImageIntent();
-                        }
+                        dispatchTakePictureIntent();
                     } else {
-                        Toast.makeText(requireContext(), "Permission denied", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), "Camera permission denied", Toast.LENGTH_SHORT).show();
+                    }
+                }
+        );
+
+        storagePermissionLauncher = registerForActivityResult(
+                new ActivityResultContracts.RequestPermission(),
+                isGranted -> {
+                    if (isGranted) {
+                        dispatchPickImageIntent();
+                    } else {
+                        Toast.makeText(requireContext(), "Storage permission denied", Toast.LENGTH_SHORT).show();
                     }
                 }
         );
 
         takePictureLauncher = registerForActivityResult(
                 new ActivityResultContracts.TakePicture(),
-                result -> {
-                    if (result) {
-                        syncAlgoSelection(requireView());
+                success -> {
+                    if (success) {
                         navigateToSelectFragment();
                     } else {
                         Toast.makeText(requireContext(), "Failed to capture photo", Toast.LENGTH_SHORT).show();
@@ -77,10 +87,9 @@ public class HomeFragment extends Fragment {
                 uri -> {
                     if (uri != null) {
                         photoUri = uri;
-                        syncAlgoSelection(requireView());
                         navigateToSelectFragment();
                     } else {
-                        Toast.makeText(requireContext(), "Failed to select photo", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), "Failed to pick image", Toast.LENGTH_SHORT).show();
                     }
                 }
         );
@@ -88,87 +97,124 @@ public class HomeFragment extends Fragment {
 
     @Override
     public void onViewCreated(@NonNull View v, @Nullable Bundle savedInstanceState) {
-        View btnAverage = v.findViewById(R.id.btnAverage);
-        if (btnAverage != null) {
-            btnAverage.setSelected(true);
-            AlgoConfig.selectedAlgo = "average";
-            AlgoConfig.isColor = false;
-        }
         super.onViewCreated(v, savedInstanceState);
+
+        vm.selectedAlgo.setValue("average");
+        vm.withRep.setValue(false);
 
         TextView tv = v.findViewById(R.id.mosaicPlaceholder);
         String text = "Turn Pixels Into MAGIC";
         SpannableString ss = new SpannableString(text);
-
-        int[] colors = {
-                0xFFE84133,
-                0xFF4A8E20,
-                0xFF3D868D,
-                0xFFFFCA00,
-                0xFF60BAC2
-        };
-
+        int[] colors = { 0xFFE84133, 0xFF4A8E20, 0xFF3D868D, 0xFFFFCA00, 0xFF60BAC2 };
         int start = text.indexOf("MAGIC");
         for (int i = 0; i < colors.length; i++) {
             ss.setSpan(
                     new ForegroundColorSpan(colors[i]),
-                    start + i,
-                    start + i + 1,
+                    start + i, start + i + 1,
                     Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
             );
         }
         tv.setText(ss);
 
-        v.findViewById(R.id.importContainer).setOnClickListener(view -> {
-            Log.d("HomeFragment", "importContainer clicked, showing options");
-            showPhotoOptionsDialog();
-        });
+        View importContainer = v.findViewById(R.id.importContainer);
+        importContainer.setOnClickListener(view -> showPhotoOptionsDialog());
+
+        View helpPopup = v.findViewById(R.id.helpPopup);
+        View helpButton = v.findViewById(R.id.helpButton);
+        View closeHelp = v.findViewById(R.id.closeHelp);
+        helpButton.setOnClickListener(view ->
+                helpPopup.setVisibility(
+                        helpPopup.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE
+                )
+        );
+        closeHelp.setOnClickListener(view -> helpPopup.setVisibility(View.GONE));
+
+        SharedPreferences prefs = requireActivity()
+                .getSharedPreferences("app_prefs", Context.MODE_PRIVATE);
+        boolean isFirst = prefs.getBoolean("first_launch", true);
+        if (isFirst) {
+            new AlertDialog.Builder(requireContext())
+                    .setTitle("Guide pour débutant")
+                    .setMessage("Souhaitez-vous un guide pour démarrer ?")
+                    .setPositiveButton("Oui", (dlg, w) -> {
+                        TapTargetView.showFor(requireActivity(),
+                                TapTarget.forView(importContainer,
+                                                "Import a Photo",
+                                                "Appuyez ici pour choisir ou prendre une photo.")
+                                        .outerCircleColor(R.color.white)
+                                        .targetCircleColor(R.color.black)
+                                        .titleTextColor(android.R.color.black)
+                                        .descriptionTextColor(android.R.color.black)
+                                        .cancelable(true),
+                                new TapTargetView.Listener() {
+                                    @Override public void onTargetClick(TapTargetView view) {
+                                        super.onTargetClick(view);
+                                        navigateToSelectFragmentWithDefaultImage();
+                                    }
+                                    @Override public void onTargetCancel(TapTargetView view) {
+                                        super.onTargetCancel(view);
+                                        navigateToSelectFragmentWithDefaultImage();
+                                    }
+                                }
+                        );
+                        prefs.edit().putBoolean("first_launch", false).apply();
+                    })
+                    .setNegativeButton("Non", (dlg, w) ->
+                            prefs.edit().putBoolean("first_launch", false).apply()
+                    )
+                    .setCancelable(false)
+                    .show();
+        }
     }
 
     private void showPhotoOptionsDialog() {
         new AlertDialog.Builder(requireContext())
-                .setTitle("Select Photo")
-                .setItems(new String[]{"Choose a Photo", "Take a Photo"}, (dialog, which) -> {
-                    Log.d("HomeFragment", "Option selected: " + which);
-                    if (which == 0) {
-                        checkStoragePermission();
-                    } else {
-                        checkCameraPermission();
-                    }
-                })
-                .setNegativeButton("Cancel", null)
+                .setTitle("Sélectionner une photo")
+                .setItems(new String[]{"Choisir une photo", "Prendre une photo"},
+                        (dlg, which) -> {
+                            if (which == 0) {
+                                checkStoragePermission();
+                            } else {
+                                checkCameraPermission();
+                            }
+                        }
+                )
+                .setNegativeButton("Annuler", null)
                 .show();
     }
 
     private void checkCameraPermission() {
-        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA)
-                == PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(requireContext(),
+                Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
             dispatchTakePictureIntent();
         } else {
-            requestPermissionLauncher.launch(Manifest.permission.CAMERA);
+            cameraPermissionLauncher.launch(Manifest.permission.CAMERA);
         }
     }
 
     private void checkStoragePermission() {
-        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_MEDIA_IMAGES)
-                == PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(requireContext(),
+                Manifest.permission.READ_MEDIA_IMAGES) == PackageManager.PERMISSION_GRANTED) {
             dispatchPickImageIntent();
         } else {
-            requestPermissionLauncher.launch(Manifest.permission.READ_MEDIA_IMAGES);
+            storagePermissionLauncher.launch(Manifest.permission.READ_MEDIA_IMAGES);
         }
     }
 
     private void dispatchTakePictureIntent() {
         try {
-            File photoFile = createImageFile();
+            File photoFile = createTempImageFile();
             photoUri = FileProvider.getUriForFile(
                     requireContext(),
-                    "com.example.motophosaique.fileprovider",
+                    requireContext().getPackageName() + ".fileprovider",
                     photoFile
             );
             takePictureLauncher.launch(photoUri);
         } catch (IOException ex) {
-            Toast.makeText(requireContext(), "Error creating file", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(),
+                    "Erreur création fichier",
+                    Toast.LENGTH_SHORT
+            ).show();
         }
     }
 
@@ -176,31 +222,32 @@ public class HomeFragment extends Fragment {
         pickImageLauncher.launch("image/*");
     }
 
-    private File createImageFile() throws IOException {
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
-        String imageFileName = "JPEG_" + timeStamp + "_";
-        File storageDir = requireActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        return File.createTempFile(imageFileName, ".jpg", storageDir);
+    /**
+     * 创建临时拍照文件到缓存目录，前缀 tmp_ 避免历史扫描
+     */
+    private File createTempImageFile() throws IOException {
+        String ts = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US)
+                .format(new Date());
+        String fileName = "tmp_" + ts + "_";
+        File cacheDir = requireActivity().getCacheDir();
+        return File.createTempFile(fileName, ".jpg", cacheDir);
     }
 
     private void navigateToSelectFragment() {
-        Log.d("HomeFragment", "Navigating with photoUri: " + photoUri);
         Bundle args = new Bundle();
         args.putString("photoUri", photoUri.toString());
+        args.putBoolean("showBlockSizeGuide", false);
         Navigation.findNavController(requireView())
                 .navigate(R.id.action_home_to_select, args);
     }
 
-    private void syncAlgoSelection(View root) {
-        if (root.findViewById(R.id.btnAverage) != null && root.findViewById(R.id.btnAverage).isSelected()) {
-            AlgoConfig.selectedAlgo = "average";
-            AlgoConfig.isColor = false;
-        } else if (root.findViewById(R.id.btnHisto) != null && root.findViewById(R.id.btnHisto).isSelected()) {
-            AlgoConfig.selectedAlgo = "histo";
-            AlgoConfig.isColor = false;
-        } else if (root.findViewById(R.id.btnDistribution) != null && root.findViewById(R.id.btnDistribution).isSelected()) {
-            AlgoConfig.selectedAlgo = "distribute";
-            AlgoConfig.isColor = false;
-        }
+    private void navigateToSelectFragmentWithDefaultImage() {
+        String pkg = requireContext().getPackageName();
+        Uri def = Uri.parse("android.resource://" + pkg + "/" + R.drawable.background);
+        Bundle args = new Bundle();
+        args.putString("photoUri", def.toString());
+        args.putBoolean("showBlockSizeGuide", true);
+        Navigation.findNavController(requireView())
+                .navigate(R.id.action_home_to_select, args);
     }
 }
