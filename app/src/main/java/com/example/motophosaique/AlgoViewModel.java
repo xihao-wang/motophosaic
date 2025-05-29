@@ -14,7 +14,7 @@ public class AlgoViewModel extends ViewModel {
     /**
      * 添加生成记录，如果上一条记录与当前完全一致（type + algo），则跳过
      */
-    public void generateImage(String imagePath, String type, String algo, float timeSec) {
+    public void generateImage(String imagePath,String originalUri, String type, String algo, float timeSec) {
         List<HistoryItem> current = generatedImages.getValue();
         if (current == null) {
             current = new ArrayList<>();
@@ -28,7 +28,7 @@ public class AlgoViewModel extends ViewModel {
             }
         }
 
-        HistoryItem item = new HistoryItem(imagePath, type, algo, timeSec);
+        HistoryItem item = new HistoryItem(imagePath,originalUri, type, algo, timeSec);
         List<HistoryItem> updated = new ArrayList<>(current);
         updated.add(item);
         generatedImages.setValue(updated);

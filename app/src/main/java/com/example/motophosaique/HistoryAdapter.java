@@ -3,6 +3,7 @@ package com.example.motophosaique;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,6 +11,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.io.File;
@@ -54,12 +56,14 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.HistoryV
         holder.textTime.setText("Time: " + item.getTimeSec() + "s");
 
         holder.itemView.setOnClickListener(v -> {
-            Intent intent = new Intent(context, HistoryDetailActivity.class);
-            intent.putExtra("imagePath", item.getImagePath());
-            intent.putExtra("type",      item.getType());
-            intent.putExtra("algo",      item.getAlgo());
-            intent.putExtra("timeSec",   item.getTimeSec());
-            context.startActivity(intent);
+            Bundle b = new Bundle();
+            b.putString("imagePath", item.getImagePath());
+            b.putString("originalUri", item.getOriginalUri());
+            b.putString("type",      item.getType());
+            b.putString("algo",      item.getAlgo());
+            b.putFloat ("timeSec",   item.getTimeSec());
+            Navigation.findNavController(v)
+                    .navigate(R.id.historyDetailFragment, b);
         });
     }
 

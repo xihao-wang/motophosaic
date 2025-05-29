@@ -24,27 +24,27 @@ public class ColorAlgoFragment extends Fragment {
         // ✅ 初次默认选中（可选）
         if (!AlgoConfig.hasUserSelected) {
             setSelected(btnAvgColor, btnHistoColor, btnDistColor);
-            AlgoConfig.selectedAlgo = "average";
+            AlgoConfig.selectedAlgo = "color_average";
             AlgoConfig.isColor = true;
         }
 
         btnAvgColor.setOnClickListener(v -> {
             setSelected(btnAvgColor, btnHistoColor, btnDistColor);
-            AlgoConfig.selectedAlgo = "average";
+            AlgoConfig.selectedAlgo = "color_average";
             AlgoConfig.isColor = true;
             AlgoConfig.hasUserSelected = true;
         });
 
         btnHistoColor.setOnClickListener(v -> {
             setSelected(btnHistoColor, btnAvgColor, btnDistColor);
-            AlgoConfig.selectedAlgo = "histo";
+            AlgoConfig.selectedAlgo = "color_histo";
             AlgoConfig.isColor = true;
             AlgoConfig.hasUserSelected = true;
         });
 
         btnDistColor.setOnClickListener(v -> {
             setSelected(btnDistColor, btnAvgColor, btnHistoColor);
-            AlgoConfig.selectedAlgo = "distribute";
+            AlgoConfig.selectedAlgo = "color_distribution";
             AlgoConfig.isColor = true;
             AlgoConfig.hasUserSelected = true;
         });
@@ -59,13 +59,13 @@ public class ColorAlgoFragment extends Fragment {
         Button btnDistColor = requireView().findViewById(R.id.btnDistColor);
 
         if (btnAvgColor.isSelected()) {
-            AlgoConfig.selectedAlgo = "average";
+            AlgoConfig.selectedAlgo = "color_average";
             AlgoConfig.isColor = true;
         } else if (btnHistoColor.isSelected()) {
-            AlgoConfig.selectedAlgo = "histo";
+            AlgoConfig.selectedAlgo = "color_histo";
             AlgoConfig.isColor = true;
         } else if (btnDistColor.isSelected()) {
-            AlgoConfig.selectedAlgo = "distribution";
+            AlgoConfig.selectedAlgo = "color_distribution";
             AlgoConfig.isColor = true;
         }
     }

@@ -1,7 +1,9 @@
 package com.example.motophosaique;
 
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -9,6 +11,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -27,8 +30,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 public class ResultFragment extends Fragment {
 
@@ -36,6 +41,7 @@ public class ResultFragment extends Fragment {
     private Bitmap generatedBmp;
     private float usedSeconds;
     private String lastHistoryPath;
+    private String    originalUri;
 
     public ResultFragment() {
         super(R.layout.fragment_result);
@@ -50,7 +56,9 @@ public class ResultFragment extends Fragment {
         int blockSize    = args != null ? args.getInt("blockSize", 16) : 16;
         String algo      = args != null ? args.getString("algo", "average") : "average";
         String type      = args != null ? args.getString("colorMode", "grey") : "grey";
-        boolean withRep  = args != null && args.getBoolean("withRep", false);
+        //  boolean withRep  = args != null && args.getBoolean("withRep", true);
+        boolean withRep = true;
+        originalUri = uriStr;
 
         PhotoView photoView = v.findViewById(R.id.ivResult);
         TextView tvTime     = v.findViewById(R.id.tvTime);
@@ -163,7 +171,17 @@ public class ResultFragment extends Fragment {
                 File inFile;
                 File outFile;
 
-                if ("grey".equals(type)) {
+                if ("cheat_grey".equals(algo)) {
+                    // Cheat Grey —— 一定要 PGM
+                    inFile  = new File(cacheDir, "input.pgm");
+                    outFile = new File(cacheDir, "output.pgm");
+                    try {
+                        Utils.saveAsPGM(originalBmp, inFile);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        return null;
+                    }
+                } else if ("grey".equals(type)) {
                     // 灰度模式：PGM 路径
                     inFile  = new File(cacheDir, "input.pgm");
                     outFile = new File(cacheDir, "output.pgm");
@@ -174,14 +192,12 @@ public class ResultFragment extends Fragment {
                         return null;
                     }
                 } else {
-                    // 彩色模式：PNG 路径
-                    inFile  = new File(cacheDir, "input.png");
-                    outFile = new File(cacheDir, "output.png");
-                    try (FileOutputStream fos = new FileOutputStream(inFile)) {
-                        originalBmp.compress(Bitmap.CompressFormat.PNG, 100, fos);
+                    inFile  = new File(cacheDir, "input.ppm");
+                    outFile = new File(cacheDir, "output.ppm");
+                    try {
+                        Utils.saveAsPPM(originalBmp, inFile);
                     } catch (IOException e) {
-                        e.printStackTrace();
-                        return null;
+                        throw new RuntimeException(e);
                     }
                 }
 
@@ -191,6 +207,7 @@ public class ResultFragment extends Fragment {
                                 inFile.getAbsolutePath(),
                                 outFile.getAbsolutePath(),
                                 blockSize,
+                                type,
                                 algo,
                                 withRep
                         );
@@ -198,7 +215,7 @@ public class ResultFragment extends Fragment {
 
                 // 解码输出
                 Bitmap resultBmp;
-                if ("grey".equals(type)) {
+                if ("grey".equals(type)|| "cheat_grey".equals(algo)) {
                     resultBmp = Utils.decodePGM(outFile);
                 } else {
                     resultBmp = BitmapFactory.decodeFile(outFile.getAbsolutePath());
@@ -229,9 +246,38 @@ public class ResultFragment extends Fragment {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+                addToHistory(
+                        lastHistoryPath,
+                        originalUri,
+                        type,
+                        algo,
+                        usedSeconds
+                );
 
                 btnGen.setSelected(true);
             }
         }.execute();
     }
+    private void addToHistory(String imagePath,
+                              String originalUri,
+                              String type,
+                              String algo,
+                              float timeSec) {
+        // prefs 中存一个 Set<String>，每条用 | 分隔
+        SharedPreferences prefs = requireContext()
+                .getSharedPreferences("history_prefs", Context.MODE_PRIVATE);
+        Set<String> set = prefs.getStringSet("history_set", new LinkedHashSet<>());
+        // 新记录：
+        String entry = TextUtils.join("|",
+                Arrays.asList(
+                        imagePath,
+                        originalUri,
+                        type,
+                        algo,
+                        String.valueOf(timeSec)
+                ));
+        set.add(entry);
+        prefs.edit().putStringSet("history_set", set).apply();
+    }
 }
+

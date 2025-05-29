@@ -12,6 +12,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import android.graphics.Color;
+import java.nio.charset.StandardCharsets;
 
 public class Utils {
     private static final String TAG = "Utils";
@@ -117,6 +119,29 @@ public class Utils {
         } catch (IOException e) {
             Log.e(TAG, "saveAsPGM failed: " + outputFile.getAbsolutePath(), e);
             throw e;
+        }
+    }
+
+    public static void saveAsPPM(Bitmap bmp, File outFile) throws IOException {
+        try (FileOutputStream fos = new FileOutputStream(outFile)) {
+            int w = bmp.getWidth(), h = bmp.getHeight();
+            // 写 P6 header
+            String header = "P6\n" + w + " " + h + "\n255\n";
+            fos.write(header.getBytes(StandardCharsets.US_ASCII));
+            // 写每个像素的 RGB bytes
+            int[] pixels = new int[w * h];
+            bmp.getPixels(pixels, 0, w, 0, 0, w, h);
+            byte[] row = new byte[3 * w];
+            int idx = 0;
+            for (int y = 0; y < h; y++) {
+                for (int x = 0; x < w; x++) {
+                    int color = pixels[idx++];
+                    row[3*x    ] = (byte) Color.red(color);
+                    row[3*x + 1] = (byte) Color.green(color);
+                    row[3*x + 2] = (byte) Color.blue(color);
+                }
+                fos.write(row);
+            }
         }
     }
 }

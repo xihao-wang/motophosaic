@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
     app:startDestination="@id/homeFragment">
 
@@ -19,6 +20,10 @@
         android:name="com.example.motophosaique.HistoryFragment"
         android:label="HistoryFragment" />
 
+    <fragment
+        android:id="@+id/historyDetailFragment"
+        android:name="com.example.motophosaique.HistoryDetailFragment"
+        tools:layout="@layout/fragment_history_detail" />
 
     <fragment
         android:id="@+id/selectFragment"

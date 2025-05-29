@@ -10,6 +10,7 @@ import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
@@ -17,6 +18,8 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.cardview.widget.CardView;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
@@ -119,15 +122,22 @@ public class HomeFragment extends Fragment {
         View importContainer = v.findViewById(R.id.importContainer);
         importContainer.setOnClickListener(view -> showPhotoOptionsDialog());
 
-        View helpPopup = v.findViewById(R.id.helpPopup);
-        View helpButton = v.findViewById(R.id.helpButton);
-        View closeHelp = v.findViewById(R.id.closeHelp);
-        helpButton.setOnClickListener(view ->
-                helpPopup.setVisibility(
-                        helpPopup.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE
-                )
-        );
-        closeHelp.setOnClickListener(view -> helpPopup.setVisibility(View.GONE));
+        ConstraintLayout helpOverlay = v.findViewById(R.id.helpOverlay);
+        CardView helpPopup           = v.findViewById(R.id.helpPopup);
+        ImageView helpButton         = v.findViewById(R.id.helpButton);
+
+        helpButton.setOnClickListener(_ignored -> {
+            helpOverlay.setVisibility(View.VISIBLE);
+        });
+
+        // 点击背景区域（overlay 上），或者关闭按钮，都收起 overlay
+        helpOverlay.setOnClickListener(_ignored -> {
+            helpOverlay.setVisibility(View.GONE);
+        });
+
+        helpPopup.setOnClickListener(_ignored -> {
+            // 什么也不做，只是拦截事件
+        });
 
         SharedPreferences prefs = requireActivity()
                 .getSharedPreferences("app_prefs", Context.MODE_PRIVATE);

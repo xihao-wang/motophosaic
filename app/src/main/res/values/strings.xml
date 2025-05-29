@@ -1,3 +1,13 @@
 <resources>
     <string name="app_name">motophosaique</string>
+    <string name="help_text">Photo-mosaic is an artful way to rebuild a large image by stitching together many smaller “tile” photographs. Each tile is carefully selected to resemble the color, tone or texture of its corresponding region in the original picture, so that when you step back the tiny images blend into one cohesive masterpiece.\n\n\n
+
+Algorithms:\n\n
+• Average: divides the target photo into equal-sized blocks, computes the average RGB color of each block, and then picks the tile whose overall color best matches that average. Fast and simple, it creates a clear mosaic outline.\n
+• Histogram: for each block and each tile, builds a three-channel histogram of color intensities, then compares them using the Bhattacharyya distance metric. This captures more nuance in color distribution, producing richer, more faithful details.\n
+• Distribution: goes pixel-by-pixel, measuring the straight-line distance between each block’s colors and each tile’s colors. By matching exact color patterns, it yields the sharpest, most accurate mosaic reproduction—at the cost of extra compute time.\n\n\n
+
+Cheating mode: \nTo preserve fine textures and avoid overly blocky artifacts, this option blends 30 % of the original image back into the final mosaic. The result retains subtle brushstrokes, gradients and facial features while still showcasing the mosaic effect—ideal when you want both artistic flair and photographic clarity.
+        \n\n\n\n © 2025 Ni Gong, Xihao Wang
+    </string>
 </resources>

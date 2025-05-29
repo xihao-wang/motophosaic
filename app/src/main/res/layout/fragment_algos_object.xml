@@ -8,9 +8,23 @@
     android:padding="16dp"
     android:background="@android:color/transparent">
 
-    <TextView
-        android:layout_width="wrap_content"
+    <Button
+        android:id="@+id/btnCheatGrey"
+        android:layout_width="0dp"
+        android:layout_weight="1"
         android:layout_height="wrap_content"
-        android:text="Object Detection Algorithms Coming Soon"
-        android:textColor="@android:color/white" />
+        android:text="Grey"
+        android:background="@drawable/btn_bg_selector"
+        android:textColor="@color/btn_text_color"/>
+
+    <Button
+        android:id="@+id/btnCheatColor"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="wrap_content"
+        android:text="Color"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:background="@drawable/btn_bg_selector"
+        android:textColor="@color/btn_text_color"/>
 </LinearLayout>

@@ -5,12 +5,13 @@ public class HistoryItem {
     private final String algo;
     private final String type;     // ➕ 新增字段
     private final float timeSec;
-
-    public HistoryItem(String imagePath, String type, String algo, float timeSec) {
+    private final String originalUri;
+    public HistoryItem(String imagePath,String originalUri, String type, String algo, float timeSec) {
         this.imagePath = imagePath;
         this.type = type;
         this.algo = algo;
         this.timeSec = timeSec;
+        this.originalUri = originalUri;
     }
 
     public String getImagePath() {
@@ -24,8 +25,8 @@ public class HistoryItem {
     public String getAlgo() {
         return algo;
     }
-
     public float getTimeSec() {
         return timeSec;
     }
+    public String getOriginalUri() {return originalUri;}
 }

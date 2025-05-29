@@ -18,8 +18,10 @@ public class MainActivity extends AppCompatActivity {
             String outputPath,
             int blockSize,
             String mode,
+            String algo,
             boolean withRepetition
     );
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

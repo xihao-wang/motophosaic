@@ -7,7 +7,18 @@ add_library( photomosaic-lib
         photomosaic-lib.cpp
         moyen.cpp
         histo.cpp
-        distribution.cpp )
+        distribution.cpp
+        moyen_cou.cpp
+        histo_cou.cpp
+        distribution_cou.cpp
+        moyen_cou_cheat.cpp
+        moyen_cheat.cpp
+)
+
+target_include_directories( photomosaic-lib
+        PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
+        ${CMAKE_CURRENT_SOURCE_DIR}/third_party/stb
+)
 
 target_include_directories( photomosaic-lib
         PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} )

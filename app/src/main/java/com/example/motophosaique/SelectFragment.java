@@ -25,6 +25,7 @@ public class SelectFragment extends Fragment {
     private String colorMode = "grey";
     private boolean blockGuideShown = false;
     private boolean generateGuideShown = false;
+    private static final int[] BLOCK_VALUES = {2, 4, 8, 16, 32, 64, 128};
 
     public SelectFragment() {
         super(R.layout.fragment_select);
@@ -43,26 +44,45 @@ public class SelectFragment extends Fragment {
     public void onViewCreated(@NonNull View v, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(v, savedInstanceState);
 
+        // Restore state if needed
         if (savedInstanceState != null) {
-            blockGuideShown     = savedInstanceState.getBoolean("blockGuideShown", false);
-            generateGuideShown  = savedInstanceState.getBoolean("generateGuideShown", false);
-            blockSize           = savedInstanceState.getInt("blockSize", blockSize);
-            colorMode           = savedInstanceState.getString("colorMode", colorMode);
+            blockGuideShown    = savedInstanceState.getBoolean("blockGuideShown", false);
+            generateGuideShown = savedInstanceState.getBoolean("generateGuideShown", false);
+            blockSize          = savedInstanceState.getInt("blockSize", blockSize);
+            colorMode          = savedInstanceState.getString("colorMode", colorMode);
         }
 
         Bundle args = getArguments();
         String uriStr = args != null ? args.getString("photoUri", "") : "";
 
+        // Preview image
         ImageView ivPreview = v.findViewById(R.id.ivPreview);
         if (!uriStr.isEmpty()) ivPreview.setImageURI(Uri.parse(uriStr));
 
+        // Block size label & SeekBar
         TextView tvBlock = v.findViewById(R.id.tvBlockSize);
-        SeekBar sb = v.findViewById(R.id.seekBar);
-        sb.setProgress(blockSize);
+        SeekBar sb      = v.findViewById(R.id.seekBar);
+
+        // Configure SeekBar: 0..6 maps to BLOCK_VALUES indices
+        sb.setMax(BLOCK_VALUES.length - 1);
+
+        // Find the index of the current blockSize in BLOCK_VALUES (default to 3 => 16)
+        int defaultIndex = 3;
+        for (int i = 0; i < BLOCK_VALUES.length; i++) {
+            if (BLOCK_VALUES[i] == blockSize) {
+                defaultIndex = i;
+                break;
+            }
+        }
+        sb.setProgress(defaultIndex);
+        blockSize = BLOCK_VALUES[defaultIndex];
         tvBlock.setText("Size Of Block: " + blockSize);
+
         sb.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                blockSize = Math.max(1, progress);
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                // Map progress (0..6) to the actual block size
+                blockSize = BLOCK_VALUES[progress];
                 tvBlock.setText("Size Of Block: " + blockSize);
             }
             @Override public void onStartTrackingTouch(SeekBar seekBar) {}
@@ -73,7 +93,7 @@ public class SelectFragment extends Fragment {
         ViewPager2 vpAlgo = v.findViewById(R.id.vpAlgo);
         vpAlgo.setAdapter(new AlgoPagerAdapter(this));
         new TabLayoutMediator(tabMode, vpAlgo, (tab, pos) ->
-                tab.setText(pos==0?"Grey":pos==1?"Color":"Object")
+                tab.setText(pos==0?"Grey":pos==1?"Color":"Cheating")
         ).attach();
 
         vpAlgo.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {

@@ -1,39 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp"
-    android:background="#111">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#111"
+    >
 
     <ImageView
         android:id="@+id/detailImage"
         android:layout_width="match_parent"
         android:layout_height="300dp"
         android:scaleType="fitCenter"
-        android:layout_marginBottom="16dp" />
-
+        android:layout_marginBottom="16dp"
+        android:layout_marginTop="50dp"/>
 
     <TextView
         android:id="@+id/detailType"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:text="Type: grey"
         android:textColor="#FFFFFF"
         android:textSize="16sp"
-        android:layout_marginBottom="8dp"
-        android:text="Type: grey" />
+        android:layout_marginBottom="8dp"/>
 
     <TextView
         android:id="@+id/detailAlgo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:text="Algorithm: average"
         android:textColor="#FFFFFF"
         android:textSize="16sp"
-        android:layout_marginBottom="8dp" />
+        android:layout_marginBottom="8dp"/>
 
     <TextView
         android:id="@+id/detailTime"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:text="Time: 1.5s"
         android:textColor="#CCCCCC"
-        android:textSize="14sp" />
+        android:textSize="14sp"/>
+
 </LinearLayout>

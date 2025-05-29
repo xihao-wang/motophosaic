@@ -45,7 +45,7 @@
         </activity>
 
         <!-- ✅ History detail activity -->
-        <activity android:name=".HistoryDetailActivity" />
+        <activity android:name=".HistoryDetailFragment" />
 
     </application>
 </manifest>
