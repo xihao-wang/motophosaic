@@ -1,13 +1,12 @@
+// GreyAlgoFragment.java
 package com.example.motophosaique;
 
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-
 import com.getkeepsafe.taptargetview.TapTarget;
 import com.getkeepsafe.taptargetview.TapTargetView;
 

@@ -1,11 +1,15 @@
 package com.example.motophosaique;
 
+import android.animation.ValueAnimator;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -41,7 +45,9 @@ public class ResultFragment extends Fragment {
     private Bitmap generatedBmp;
     private float usedSeconds;
     private String lastHistoryPath;
-    private String    originalUri;
+    private String originalUri;
+
+    private Bitmap blendingBmp;
 
     public ResultFragment() {
         super(R.layout.fragment_result);
@@ -56,23 +62,24 @@ public class ResultFragment extends Fragment {
         int blockSize    = args != null ? args.getInt("blockSize", 16) : 16;
         String algo      = args != null ? args.getString("algo", "average") : "average";
         String type      = args != null ? args.getString("colorMode", "grey") : "grey";
-        //  boolean withRep  = args != null && args.getBoolean("withRep", true);
-        boolean withRep = true;
-        originalUri = uriStr;
+        boolean withRep  = true;
+        originalUri      = uriStr;
 
-        PhotoView photoView = v.findViewById(R.id.ivResult);
+        PhotoView ivOriginal  = v.findViewById(R.id.ivOriginal);
+        PhotoView ivGenerated = v.findViewById(R.id.ivGenerated);
+
         TextView tvTime     = v.findViewById(R.id.tvTime);
         Button btnOrig      = v.findViewById(R.id.btnOriginal);
         Button btnGen       = v.findViewById(R.id.btnGenerated);
         Button btnShare     = v.findViewById(R.id.btnShare);
         Button btnSave      = v.findViewById(R.id.btnSave);
+
         List<Button> toggles = Arrays.asList(btnOrig, btnGen);
 
         v.findViewById(R.id.btnBack)
                 .setOnClickListener(x -> Navigation.findNavController(x).popBackStack());
 
-        // 加载原图
-        if (!uriStr.isEmpty()) {
+        if (!TextUtils.isEmpty(uriStr)) {
             try {
                 Uri uri = Uri.parse(uriStr);
                 originalBmp = MediaStore.Images.Media
@@ -85,23 +92,62 @@ public class ResultFragment extends Fragment {
             originalBmp = BitmapFactory.decodeResource(getResources(), R.drawable.background);
         }
 
-        if (originalBmp != null) photoView.setImageBitmap(originalBmp);
-        btnOrig.setSelected(true);
-        btnGen .setSelected(false);
+        if (originalBmp != null) {
+            blendingBmp = Bitmap.createBitmap(
+                    originalBmp.getWidth(),
+                    originalBmp.getHeight(),
+                    Config.ARGB_8888
+            );
+            ivOriginal.setImageBitmap(originalBmp);
+        }
 
-        // 切换原图/生成图
+        ivGenerated.setAlpha(0f);
+
+        btnOrig.setSelected(true);
+        btnGen.setSelected(false);
+
         btnOrig.setOnClickListener(view -> {
-            if (originalBmp != null) photoView.setImageBitmap(originalBmp);
-            toggles.forEach(b -> b.setSelected(false));
+            if (originalBmp == null) return;
+            if (generatedBmp == null) {
+                ivOriginal.setImageBitmap(originalBmp);
+                btnOrig.setSelected(true);
+                btnGen.setSelected(false);
+                return;
+            }
+            ValueAnimator animator = ValueAnimator.ofFloat(0f, 1f);
+            animator.setDuration(500);
+            animator.addUpdateListener(animation -> {
+                float fraction = (float) animation.getAnimatedValue();
+                // fraction=0：pure generatedBmp；fraction=1：pure originalBmp
+                blendBitmaps(fraction, 1f - fraction, blendingBmp);
+                ivOriginal.setImageBitmap(blendingBmp);
+            });
+            animator.start();
             btnOrig.setSelected(true);
+            btnGen.setSelected(false);
         });
+
         btnGen.setOnClickListener(view -> {
-            if (generatedBmp != null) photoView.setImageBitmap(generatedBmp);
-            toggles.forEach(b -> b.setSelected(false));
+            if (generatedBmp == null) return;
+            if (originalBmp == null) {
+                ivOriginal.setImageBitmap(generatedBmp);
+                btnOrig.setSelected(false);
+                btnGen.setSelected(true);
+                return;
+            }
+            ValueAnimator animator = ValueAnimator.ofFloat(0f, 1f);
+            animator.setDuration(500);
+            animator.addUpdateListener(animation -> {
+                float fraction = (float) animation.getAnimatedValue();
+                // fraction=0：pure originalBmp；fraction=1：pure generatedBmp
+                blendBitmaps(1f - fraction, fraction, blendingBmp);
+                ivOriginal.setImageBitmap(blendingBmp);
+            });
+            animator.start();
+            btnOrig.setSelected(false);
             btnGen.setSelected(true);
         });
 
-        // 分享逻辑保持不变
         btnShare.setOnClickListener(view -> {
             if (generatedBmp == null) return;
             try {
@@ -123,7 +169,6 @@ public class ResultFragment extends Fragment {
             }
         });
 
-        // 保存到本地相册逻辑保持不变
         btnSave.setOnClickListener(view -> {
             if (generatedBmp == null) {
                 Toast.makeText(requireContext(), "No mosaic to save", Toast.LENGTH_SHORT).show();
@@ -157,22 +202,19 @@ public class ResultFragment extends Fragment {
             }
         });
 
-        // 异步生成马赛克：根据 type 分支处理
         new AsyncTask<Void, Void, Bitmap>() {
-            @Override protected void onPreExecute() {
+            @Override
+            protected void onPreExecute() {
                 usedSeconds = 0;
                 tvTime.setText("Processing...");
             }
 
-            @Override protected Bitmap doInBackground(Void... voids) {
+            @Override
+            protected Bitmap doInBackground(Void... voids) {
                 long start = System.currentTimeMillis();
                 File cacheDir = requireActivity().getCacheDir();
-
-                File inFile;
-                File outFile;
-
+                File inFile, outFile;
                 if ("cheat_grey".equals(algo)) {
-                    // Cheat Grey —— 一定要 PGM
                     inFile  = new File(cacheDir, "input.pgm");
                     outFile = new File(cacheDir, "output.pgm");
                     try {
@@ -182,7 +224,6 @@ public class ResultFragment extends Fragment {
                         return null;
                     }
                 } else if ("grey".equals(type)) {
-                    // 灰度模式：PGM 路径
                     inFile  = new File(cacheDir, "input.pgm");
                     outFile = new File(cacheDir, "output.pgm");
                     try {
@@ -200,8 +241,6 @@ public class ResultFragment extends Fragment {
                         throw new RuntimeException(e);
                     }
                 }
-
-                // 调用 native 生成
                 int res = ((MainActivity) requireActivity())
                         .generateMosaic(
                                 inFile.getAbsolutePath(),
@@ -213,28 +252,63 @@ public class ResultFragment extends Fragment {
                         );
                 if (res != 0) return null;
 
-                // 解码输出
                 Bitmap resultBmp;
-                if ("grey".equals(type)|| "cheat_grey".equals(algo)) {
+                if ("grey".equals(type) || "cheat_grey".equals(algo)) {
                     resultBmp = Utils.decodePGM(outFile);
                 } else {
                     resultBmp = BitmapFactory.decodeFile(outFile.getAbsolutePath());
                 }
-
                 usedSeconds = (System.currentTimeMillis() - start) / 1000f;
                 return resultBmp;
             }
 
-            @Override protected void onPostExecute(Bitmap bmp) {
+            @Override
+            protected void onPostExecute(Bitmap bmp) {
                 if (bmp == null) {
                     tvTime.setText("Fail (" + algo + ")");
                     return;
                 }
                 generatedBmp = bmp;
-                photoView.setImageBitmap(bmp);
+
                 tvTime.setText(String.format(Locale.US, "Time: %.2fs", usedSeconds));
 
-                // 缓存历史路径以备备用（不影响本地相册保存逻辑）
+                if (originalBmp != null) {
+                    if (   blendingBmp.getWidth()  != generatedBmp.getWidth()
+                            || blendingBmp.getHeight() != generatedBmp.getHeight()) {
+                        blendingBmp.recycle();
+                        blendingBmp = Bitmap.createBitmap(
+                                generatedBmp.getWidth(),
+                                generatedBmp.getHeight(),
+                                Config.ARGB_8888
+                        );
+                    }
+                    if (originalBmp.getWidth()  != blendingBmp.getWidth()
+                            || originalBmp.getHeight() != blendingBmp.getHeight()) {
+                        originalBmp = Bitmap.createScaledBitmap(
+                                originalBmp,
+                                blendingBmp.getWidth(),
+                                blendingBmp.getHeight(),
+                                false
+                        );
+                    }
+                    ValueAnimator anim = ValueAnimator.ofFloat(0f, 1f);
+                    anim.setDuration(500);
+                    anim.addUpdateListener(animation -> {
+                        float fraction = (float) animation.getAnimatedValue();
+                        // fraction=0：pure originalBmp；fraction=1：pure generatedBmp
+                        blendBitmaps(1f - fraction, fraction, blendingBmp);
+                        ivOriginal.setImageBitmap(blendingBmp);
+                    });
+                    anim.start();
+
+                    btnOrig.setSelected(false);
+                    btnGen.setSelected(true);
+                } else {
+                    ivOriginal.setImageBitmap(generatedBmp);
+                    btnOrig.setSelected(false);
+                    btnGen.setSelected(true);
+                }
+
                 File picDir = requireContext()
                         .getExternalFilesDir(Environment.DIRECTORY_PICTURES);
                 String histName = String.format(Locale.US,
@@ -253,21 +327,32 @@ public class ResultFragment extends Fragment {
                         algo,
                         usedSeconds
                 );
-
-                btnGen.setSelected(true);
             }
         }.execute();
     }
+
+
+    private void blendBitmaps(float alphaOriginal, float alphaGenerated, Bitmap outBitmap) {
+        Canvas canvas = new Canvas(outBitmap);
+        Paint paint = new Paint();
+        paint.setAntiAlias(true);
+        paint.setFilterBitmap(true);
+
+        paint.setAlpha((int) (alphaOriginal * 255));
+        canvas.drawBitmap(originalBmp, 0f, 0f, paint);
+
+        paint.setAlpha((int) (alphaGenerated * 255));
+        canvas.drawBitmap(generatedBmp, 0f, 0f, paint);
+    }
+
     private void addToHistory(String imagePath,
                               String originalUri,
                               String type,
                               String algo,
                               float timeSec) {
-        // prefs 中存一个 Set<String>，每条用 | 分隔
         SharedPreferences prefs = requireContext()
                 .getSharedPreferences("history_prefs", Context.MODE_PRIVATE);
         Set<String> set = prefs.getStringSet("history_set", new LinkedHashSet<>());
-        // 新记录：
         String entry = TextUtils.join("|",
                 Arrays.asList(
                         imagePath,
@@ -280,4 +365,3 @@ public class ResultFragment extends Fragment {
         prefs.edit().putStringSet("history_set", set).apply();
     }
 }
-

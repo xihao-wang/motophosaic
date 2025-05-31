@@ -3,7 +3,7 @@ package com.example.motophosaique;
 public class HistoryItem {
     private final String imagePath;
     private final String algo;
-    private final String type;     // ➕ 新增字段
+    private final String type;
     private final float timeSec;
     private final String originalUri;
     public HistoryItem(String imagePath,String originalUri, String type, String algo, float timeSec) {

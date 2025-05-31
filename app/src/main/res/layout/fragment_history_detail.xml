@@ -1,19 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:padding="16dp"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/historyDetailRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#111"
-    >
+    android:background="#333333"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp"
+    android:paddingTop="50dp">
 
     <ImageView
+        android:id="@+id/btnBack"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:clickable="true"
+        android:contentDescription="Back"
+        android:src="@drawable/back"
+        android:layout_marginTop="10dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.github.chrisbanes.photoview.PhotoView
         android:id="@+id/detailImage"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="300dp"
         android:scaleType="fitCenter"
-        android:layout_marginBottom="16dp"
-        android:layout_marginTop="50dp"/>
+        android:layout_marginTop="16dp"
+        app:layout_constraintTop_toBottomOf="@id/btnBack"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
     <TextView
         android:id="@+id/detailType"
@@ -22,16 +38,20 @@
         android:text="Type: grey"
         android:textColor="#FFFFFF"
         android:textSize="16sp"
-        android:layout_marginBottom="8dp"/>
+        android:layout_marginTop="30dp"
+        app:layout_constraintTop_toBottomOf="@id/detailImage"
+        app:layout_constraintStart_toStartOf="parent"/>
 
     <TextView
         android:id="@+id/detailAlgo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Algorithm: average"
+        android:text="Algo: average"
         android:textColor="#FFFFFF"
-        android:textSize="16sp"
-        android:layout_marginBottom="8dp"/>
+        android:textSize="35sp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@id/detailType"
+        app:layout_constraintStart_toStartOf="parent"/>
 
     <TextView
         android:id="@+id/detailTime"
@@ -39,6 +59,20 @@
         android:layout_height="wrap_content"
         android:text="Time: 1.5s"
         android:textColor="#CCCCCC"
-        android:textSize="14sp"/>
+        android:textSize="25sp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@id/detailAlgo"
+        app:layout_constraintStart_toStartOf="parent"/>
 
-</LinearLayout>
+    <TextView
+        android:id="@+id/detailTimestamp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Generated: 2025-05-31 14:23"
+        android:textColor="#CCCCCC"
+        android:textSize="14sp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@id/detailTime"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

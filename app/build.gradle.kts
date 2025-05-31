@@ -52,6 +52,8 @@ dependencies {
     implementation ("androidx.viewpager2:viewpager2:1.1.0")
     implementation("com.github.chrisbanes:PhotoView:2.3.0")
     implementation("com.getkeepsafe.taptargetview:taptargetview:1.13.3")
+    implementation ("com.google.android.material:material:1.10.0")
+    implementation ("com.github.Dimezis:BlurView:version-2.0.6")
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

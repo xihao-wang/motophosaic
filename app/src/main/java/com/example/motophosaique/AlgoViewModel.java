@@ -11,16 +11,13 @@ public class AlgoViewModel extends ViewModel {
     public final MutableLiveData<Boolean> withRep = new MutableLiveData<>(false);
     public final MutableLiveData<List<HistoryItem>> generatedImages = new MutableLiveData<>(new ArrayList<>());
 
-    /**
-     * 添加生成记录，如果上一条记录与当前完全一致（type + algo），则跳过
-     */
+
     public void generateImage(String imagePath,String originalUri, String type, String algo, float timeSec) {
         List<HistoryItem> current = generatedImages.getValue();
         if (current == null) {
             current = new ArrayList<>();
         }
 
-        // 避免重复添加相同算法与类型的连续记录
         if (!current.isEmpty()) {
             HistoryItem last = current.get(current.size() - 1);
             if (last.getAlgo().equals(algo) && last.getType().equals(type)) {

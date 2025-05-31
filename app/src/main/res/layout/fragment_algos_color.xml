@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<!-- res/layout/fragment_algos_color.xml -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/color_algo_container"
     android:layout_width="match_parent"
@@ -14,8 +14,9 @@
         android:layout_weight="1"
         android:layout_height="wrap_content"
         android:text="Average"
-        android:background="@drawable/btn_bg_selector"
-        android:textColor="@color/btn_text_color" />
+        android:background="@android:color/transparent"
+        android:stateListAnimator="@null"
+        android:textColor="@color/btn_cou_ave_color"/>
 
     <Button
         android:id="@+id/btnHistoColor"
@@ -25,8 +26,9 @@
         android:text="Histo"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
-        android:background="@drawable/btn_bg_selector"
-        android:textColor="@color/btn_text_color" />
+        android:background="@android:color/transparent"
+        android:stateListAnimator="@null"
+        android:textColor="@color/btn_cou_ave_color"/>
 
     <Button
         android:id="@+id/btnDistColor"
@@ -34,7 +36,8 @@
         android:layout_weight="1"
         android:layout_height="wrap_content"
         android:text="Distribute"
-        android:background="@drawable/btn_bg_selector"
-        android:textColor="@color/btn_text_color" />
+        android:background="@android:color/transparent"
+        android:stateListAnimator="@null"
+        android:textColor="@color/btn_cou_ave_color"/>
 
 </LinearLayout>

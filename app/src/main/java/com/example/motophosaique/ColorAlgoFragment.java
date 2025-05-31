@@ -1,9 +1,9 @@
+// ColorAlgoFragment.java
 package com.example.motophosaique;
 
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -17,35 +17,34 @@ public class ColorAlgoFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        Button btnAvgColor = view.findViewById(R.id.btnAvgColor);
+        Button btnAvgColor   = view.findViewById(R.id.btnAvgColor);
         Button btnHistoColor = view.findViewById(R.id.btnHistoColor);
-        Button btnDistColor = view.findViewById(R.id.btnDistColor);
+        Button btnDistColor  = view.findViewById(R.id.btnDistColor);
 
-        // ✅ 初次默认选中（可选）
         if (!AlgoConfig.hasUserSelected) {
             setSelected(btnAvgColor, btnHistoColor, btnDistColor);
             AlgoConfig.selectedAlgo = "color_average";
-            AlgoConfig.isColor = true;
+            AlgoConfig.isColor     = true;
         }
 
         btnAvgColor.setOnClickListener(v -> {
             setSelected(btnAvgColor, btnHistoColor, btnDistColor);
             AlgoConfig.selectedAlgo = "color_average";
-            AlgoConfig.isColor = true;
+            AlgoConfig.isColor     = true;
             AlgoConfig.hasUserSelected = true;
         });
 
         btnHistoColor.setOnClickListener(v -> {
             setSelected(btnHistoColor, btnAvgColor, btnDistColor);
             AlgoConfig.selectedAlgo = "color_histo";
-            AlgoConfig.isColor = true;
+            AlgoConfig.isColor     = true;
             AlgoConfig.hasUserSelected = true;
         });
 
         btnDistColor.setOnClickListener(v -> {
             setSelected(btnDistColor, btnAvgColor, btnHistoColor);
             AlgoConfig.selectedAlgo = "color_distribution";
-            AlgoConfig.isColor = true;
+            AlgoConfig.isColor     = true;
             AlgoConfig.hasUserSelected = true;
         });
     }
@@ -54,19 +53,19 @@ public class ColorAlgoFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
-        Button btnAvgColor = requireView().findViewById(R.id.btnAvgColor);
+        Button btnAvgColor   = requireView().findViewById(R.id.btnAvgColor);
         Button btnHistoColor = requireView().findViewById(R.id.btnHistoColor);
-        Button btnDistColor = requireView().findViewById(R.id.btnDistColor);
+        Button btnDistColor  = requireView().findViewById(R.id.btnDistColor);
 
         if (btnAvgColor.isSelected()) {
             AlgoConfig.selectedAlgo = "color_average";
-            AlgoConfig.isColor = true;
+            AlgoConfig.isColor     = true;
         } else if (btnHistoColor.isSelected()) {
             AlgoConfig.selectedAlgo = "color_histo";
-            AlgoConfig.isColor = true;
+            AlgoConfig.isColor     = true;
         } else if (btnDistColor.isSelected()) {
             AlgoConfig.selectedAlgo = "color_distribution";
-            AlgoConfig.isColor = true;
+            AlgoConfig.isColor     = true;
         }
     }
 

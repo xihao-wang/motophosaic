@@ -6,7 +6,6 @@
     android:layout_height="match_parent"
     android:background="#333333">
 
-    <!-- 背景图和导入按钮保持不变 -->
     <ImageView
         android:id="@+id/backgroundImage"
         android:layout_width="0dp"
@@ -16,7 +15,8 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintHeight_percent="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent"
+        />
 
     <LinearLayout
         android:id="@+id/importContainer"
@@ -47,7 +47,6 @@
             android:fontFamily="sans-serif-medium" />
     </LinearLayout>
 
-    <!-- 占位文字 -->
     <TextView
         android:id="@+id/mosaicPlaceholder"
         android:layout_width="0dp"
@@ -63,7 +62,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHeight_percent="0.3" />
 
-    <!-- 这是我们新增的 “方案一” 弹窗容器 -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/helpOverlay"
         android:layout_width="0dp"
@@ -82,7 +80,7 @@
             android:layout_height="0dp"
             android:layout_margin="24dp"
             app:cardCornerRadius="12dp"
-            app:cardBackgroundColor="@android:color/black"
+            app:cardBackgroundColor="#D3000000"
             app:layout_constraintWidth_percent="0.9"
             app:layout_constraintHeight_percent="0.5"
             app:layout_constraintTop_toTopOf="parent"
@@ -110,7 +108,6 @@
         </androidx.cardview.widget.CardView>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <!-- 问号按钮 -->
     <ImageView
         android:id="@+id/helpButton"
         android:layout_width="48dp"

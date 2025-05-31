@@ -1,6 +1,8 @@
 package com.example.motophosaique;
 
 import android.Manifest;
+import android.animation.ArgbEvaluator;
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -41,6 +43,15 @@ public class HomeFragment extends Fragment {
     private ActivityResultLauncher<Uri> takePictureLauncher;
     private ActivityResultLauncher<String> pickImageLauncher;
     private AlgoViewModel vm;
+
+    private ValueAnimator colorAnimator;
+    private int[] colors = {
+            0xFFE84133,
+            0xFF4A8E20,
+            0xFF3D868D,
+            0xFFFFCA00,
+            0xFF60BAC2
+    };
 
     public HomeFragment() {
         super(R.layout.fragment_home);
@@ -107,17 +118,35 @@ public class HomeFragment extends Fragment {
 
         TextView tv = v.findViewById(R.id.mosaicPlaceholder);
         String text = "Turn Pixels Into MAGIC";
-        SpannableString ss = new SpannableString(text);
-        int[] colors = { 0xFFE84133, 0xFF4A8E20, 0xFF3D868D, 0xFFFFCA00, 0xFF60BAC2 };
         int start = text.indexOf("MAGIC");
-        for (int i = 0; i < colors.length; i++) {
-            ss.setSpan(
-                    new ForegroundColorSpan(colors[i]),
-                    start + i, start + i + 1,
-                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-            );
-        }
-        tv.setText(ss);
+
+        colorAnimator = ValueAnimator.ofFloat(0f, 1f);
+        colorAnimator.setDuration(500);
+        colorAnimator.setRepeatCount(ValueAnimator.INFINITE);
+        colorAnimator.addUpdateListener(animation -> {
+            float fraction = (float) animation.getAnimatedValue();
+            SpannableString spanString = new SpannableString(text);
+
+            int[] nextColors = new int[colors.length];
+            System.arraycopy(colors, 1, nextColors, 0, colors.length - 1);
+            nextColors[colors.length - 1] = colors[0];
+
+            ArgbEvaluator evaluator = new ArgbEvaluator();
+            for (int i = 0; i < colors.length; i++) {
+                int interpolated = (int) evaluator.evaluate(fraction, colors[i], nextColors[i]);
+                spanString.setSpan(
+                        new ForegroundColorSpan(interpolated),
+                        start + i, start + i + 1,
+                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                );
+            }
+            tv.setText(spanString);
+
+            if (fraction >= 0.999f) {
+                System.arraycopy(nextColors, 0, colors, 0, colors.length);
+            }
+        });
+        colorAnimator.start();
 
         View importContainer = v.findViewById(R.id.importContainer);
         importContainer.setOnClickListener(view -> showPhotoOptionsDialog());
@@ -126,17 +155,12 @@ public class HomeFragment extends Fragment {
         CardView helpPopup           = v.findViewById(R.id.helpPopup);
         ImageView helpButton         = v.findViewById(R.id.helpButton);
 
-        helpButton.setOnClickListener(_ignored -> {
-            helpOverlay.setVisibility(View.VISIBLE);
-        });
+        helpButton.setOnClickListener(_ignored -> helpOverlay.setVisibility(View.VISIBLE));
 
-        // 点击背景区域（overlay 上），或者关闭按钮，都收起 overlay
-        helpOverlay.setOnClickListener(_ignored -> {
-            helpOverlay.setVisibility(View.GONE);
-        });
+        helpOverlay.setOnClickListener(_ignored -> helpOverlay.setVisibility(View.GONE));
 
         helpPopup.setOnClickListener(_ignored -> {
-            // 什么也不做，只是拦截事件
+        //
         });
 
         SharedPreferences prefs = requireActivity()
@@ -157,16 +181,17 @@ public class HomeFragment extends Fragment {
                                         .descriptionTextColor(android.R.color.black)
                                         .cancelable(true),
                                 new TapTargetView.Listener() {
-                                    @Override public void onTargetClick(TapTargetView view) {
+                                    @Override
+                                    public void onTargetClick(TapTargetView view) {
                                         super.onTargetClick(view);
                                         navigateToSelectFragmentWithDefaultImage();
                                     }
-                                    @Override public void onTargetCancel(TapTargetView view) {
+                                    @Override
+                                    public void onTargetCancel(TapTargetView view) {
                                         super.onTargetCancel(view);
                                         navigateToSelectFragmentWithDefaultImage();
                                     }
-                                }
-                        );
+                                });
                         prefs.edit().putBoolean("first_launch", false).apply();
                     })
                     .setNegativeButton("Non", (dlg, w) ->
@@ -174,6 +199,14 @@ public class HomeFragment extends Fragment {
                     )
                     .setCancelable(false)
                     .show();
+        }
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (colorAnimator != null && colorAnimator.isRunning()) {
+            colorAnimator.cancel();
         }
     }
 
@@ -187,8 +220,7 @@ public class HomeFragment extends Fragment {
                             } else {
                                 checkCameraPermission();
                             }
-                        }
-                )
+                        })
                 .setNegativeButton("Annuler", null)
                 .show();
     }
@@ -232,9 +264,6 @@ public class HomeFragment extends Fragment {
         pickImageLauncher.launch("image/*");
     }
 
-    /**
-     * 创建临时拍照文件到缓存目录，前缀 tmp_ 避免历史扫描
-     */
     private File createTempImageFile() throws IOException {
         String ts = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US)
                 .format(new Date());
