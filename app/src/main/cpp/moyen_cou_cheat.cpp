@@ -7,7 +7,7 @@
 
 #define LOG_TAG "mosaic_cheat_color"
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
-#define NB_BASE_DE_DONNEE 1000
+#define NB_BASE_DE_DONNEE 300
 
 int generateCheatColor(const char* inputPath, const char* outputPath, int tailleBloc, bool) {
     try {

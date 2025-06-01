@@ -7,7 +7,7 @@
 
 #define LOG_TAG "mosaic"
 #define LOGE(fmt, ...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, fmt, ##__VA_ARGS__)
-#define NB_BASE_DE_DONNEE 1000
+#define NB_BASE_DE_DONNEE 300
 
 int histogramMosaic(const char* inputPath,
                     const char* outputPath,
